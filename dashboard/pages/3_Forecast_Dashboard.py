@@ -24,7 +24,7 @@ from utils import (
     add_sidebar_footer,
     create_download_button
 )
-from styles import COLORS
+from design_system import COLORS, ICONS, create_kpi_card, render_html
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -134,20 +134,22 @@ add_sidebar_footer()
 # HEADER
 # ============================================================================
 
-st.markdown(f"""
-<h1 style="
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: {COLORS['on_surface']};
-    margin-bottom: 0.5rem;
-">🔮 Forecast Dashboard</h1>
-<p style="
-    font-size: 14px;
-    color: {COLORS['on_surface_variant']};
-    margin-bottom: 2rem;
-">Demand forecasting and predictive analytics for strategic planning</p>
-""", unsafe_allow_html=True)
+render_html(f"""
+<div style="margin-bottom: 2rem;">
+    <h1 style="
+        font-family: 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: {COLORS['text_primary']};
+        margin: 0 0 0.25rem 0;
+    ">Forecast Dashboard</h1>
+    <p style="
+        font-size: 14px;
+        color: {COLORS['text_secondary']};
+        margin: 0;
+    ">Demand forecasting and predictive analytics for strategic planning</p>
+</div>
+""")
 
 # ============================================================================
 # FORECAST KPI METRICS
@@ -338,7 +340,7 @@ fig_forecast.update_layout(
     )
 )
 
-st.plotly_chart(fig_forecast, use_container_width=True)
+st.plotly_chart(fig_forecast, width='stretch')
 
 st.markdown("---")
 
@@ -378,7 +380,7 @@ with col_left:
             height=400
         )
         
-        st.plotly_chart(fig_weekly, use_container_width=True)
+        st.plotly_chart(fig_weekly, width='stretch')
     else:
         st.info("No weekly data available.")
 
@@ -412,7 +414,7 @@ with col_right:
             height=400
         )
         
-        st.plotly_chart(fig_monthly, use_container_width=True)
+        st.plotly_chart(fig_monthly, width='stretch')
     else:
         st.info("No monthly data available.")
 
@@ -434,7 +436,7 @@ table_df.columns = ['Date', 'Forecasted Demand']
 
 st.dataframe(
     table_df,
-    use_container_width=True,
+    width='stretch',
     hide_index=True,
     height=400
 )

@@ -24,7 +24,7 @@ from utils import (
     add_sidebar_footer,
     create_download_button
 )
-from styles import COLORS
+from design_system import COLORS, ICONS, create_kpi_card, render_html
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -70,13 +70,15 @@ if segments_df.empty:
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🔍 Filters")
 
-# Segment filter
-if 'Segment' in segments_df.columns:
-    segments = ['All'] + sorted(segments_df['Segment'].dropna().unique().tolist())
+# Segment filter - use 'Cluster' column from YOUR data
+segment_col = 'Cluster' if 'Cluster' in segments_df.columns else 'Segment'
+
+if segment_col in segments_df.columns:
+    segments = ['All'] + sorted(segments_df[segment_col].dropna().unique().tolist())
     selected_segment = st.sidebar.selectbox("Customer Segment", segments)
     
     if selected_segment != 'All':
-        filtered_df = segments_df[segments_df['Segment'] == selected_segment]
+        filtered_df = segments_df[segments_df[segment_col] == selected_segment]
     else:
         filtered_df = segments_df
 else:
@@ -93,20 +95,22 @@ add_sidebar_footer()
 # HEADER
 # ============================================================================
 
-st.markdown(f"""
-<h1 style="
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: {COLORS['on_surface']};
-    margin-bottom: 0.5rem;
-">👥 Customer Dashboard</h1>
-<p style="
-    font-size: 14px;
-    color: {COLORS['on_surface_variant']};
-    margin-bottom: 2rem;
-">Customer segmentation, RFM analysis, and behavioral insights</p>
-""", unsafe_allow_html=True)
+render_html(f"""
+<div style="margin-bottom: 2rem;">
+    <h1 style="
+        font-family: 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: {COLORS['text_primary']};
+        margin: 0 0 0.25rem 0;
+    ">Customer Dashboard</h1>
+    <p style="
+        font-size: 14px;
+        color: {COLORS['text_secondary']};
+        margin: 0;
+    ">Customer segmentation, RFM analysis, and behavioral insights</p>
+</div>
+""")
 
 # ============================================================================
 # CUSTOMER KPI METRICS
@@ -117,24 +121,33 @@ col1, col2, col3, col4 = st.columns(4)
 # Calculate metrics
 total_customers = len(filtered_df)
 
-# Count segments
-if 'Segment' in filtered_df.columns:
-    segment_counts = filtered_df['Segment'].value_counts()
+# Count segments - use Cluster column
+segment_col = 'Cluster' if 'Cluster' in filtered_df.columns else 'Segment'
+
+if segment_col in filtered_df.columns:
+    segment_counts = filtered_df[segment_col].value_counts()
     
-    # Try to identify premium/high-value customers
-    premium_keywords = ['Premium', 'Champions', 'Loyal', 'VIP', 'High']
-    premium_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                            if any(keyword in str(seg) for keyword in premium_keywords)])
-    
-    # Try to identify at-risk customers
-    risk_keywords = ['At Risk', 'Hibernating', 'Lost', 'Churn', 'About to Sleep']
-    at_risk_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                            if any(keyword in str(seg) for keyword in risk_keywords)])
-    
-    # Loyal customers
-    loyal_keywords = ['Loyal', 'Champions', 'Potential Loyalist']
-    loyal_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                          if any(keyword in str(seg) for keyword in loyal_keywords)])
+    # For Cluster data (numeric), categorize by cluster number
+    if segment_col == 'Cluster':
+        # Cluster 0 = At Risk, Cluster 1 = Loyal, Cluster 2 = Premium (example mapping)
+        premium_customers = segment_counts.get(2, 0) if 2 in segment_counts.index else 0
+        at_risk_customers = segment_counts.get(0, 0) if 0 in segment_counts.index else 0
+        loyal_customers = segment_counts.get(1, 0) if 1 in segment_counts.index else 0
+    else:
+        # Try to identify premium/high-value customers
+        premium_keywords = ['Premium', 'Champions', 'Loyal', 'VIP', 'High']
+        premium_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
+                                if any(keyword in str(seg) for keyword in premium_keywords)])
+        
+        # Try to identify at-risk customers
+        risk_keywords = ['At Risk', 'Hibernating', 'Lost', 'Churn', 'About to Sleep']
+        at_risk_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
+                                if any(keyword in str(seg) for keyword in risk_keywords)])
+        
+        # Loyal customers
+        loyal_keywords = ['Loyal', 'Champions', 'Potential Loyalist']
+        loyal_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
+                              if any(keyword in str(seg) for keyword in loyal_keywords)])
 else:
     premium_customers = 0
     at_risk_customers = 0
@@ -181,15 +194,17 @@ col_left, col_right = st.columns([1, 2])
 with col_left:
     st.markdown("### 📊 Customer Segment Distribution")
     
-    if 'Segment' in segments_df.columns:
-        segment_dist = segments_df['Segment'].value_counts().reset_index()
-        segment_dist.columns = ['Segment', 'Count']
+    segment_col = 'Cluster' if 'Cluster' in segments_df.columns else 'Segment'
+    
+    if segment_col in segments_df.columns:
+        segment_dist = segments_df[segment_col].value_counts().reset_index()
+        segment_dist.columns = [segment_col, 'Count']
         
         if not segment_dist.empty:
             fig_segments = px.pie(
                 segment_dist,
                 values='Count',
-                names='Segment',
+                names=segment_col,
                 title='',
                 hole=0.4
             )
@@ -215,7 +230,7 @@ with col_left:
                 )
             )
             
-            st.plotly_chart(fig_segments, use_container_width=True)
+            st.plotly_chart(fig_segments, width='stretch')
         else:
             st.info("No segment data available.")
     else:
@@ -266,7 +281,7 @@ with col_right:
             height=400
         )
         
-        st.plotly_chart(fig_rfm, use_container_width=True)
+        st.plotly_chart(fig_rfm, width='stretch')
     else:
         st.info("RFM columns (Recency, Frequency, Monetary) not found in data.")
 
@@ -312,7 +327,7 @@ with col_left2:
             showlegend=True
         )
         
-        st.plotly_chart(fig_clv, use_container_width=True)
+        st.plotly_chart(fig_clv, width='stretch')
     else:
         st.info("Customer value column not found.")
 
@@ -352,7 +367,7 @@ with col_right2:
             height=400
         )
         
-        st.plotly_chart(fig_segment_perf, use_container_width=True)
+        st.plotly_chart(fig_segment_perf, width='stretch')
     else:
         st.info("Segment performance data not available.")
 
@@ -399,7 +414,7 @@ if display_cols:
     # Show top 50 customers
     st.dataframe(
         display_df.head(50),
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         height=400
     )
@@ -492,6 +507,6 @@ if 'Segment' in segments_df.columns:
         
         st.dataframe(
             segment_stats,
-            use_container_width=True,
+            width='stretch',
             hide_index=True
         )

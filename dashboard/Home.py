@@ -1,12 +1,10 @@
 """
 RetailPulse Analytics Management Suite - Home Page
-Main dashboard with KPI overview and navigation
+Clean professional design matching reference
 """
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
 # Import custom modules
@@ -15,13 +13,9 @@ from utils import (
     load_retail_data, 
     format_currency, 
     format_number,
-    format_percentage,
-    calculate_percentage_change,
     add_sidebar_logo,
     add_sidebar_footer
 )
-from components import metric_card, section_header, info_box
-from styles import COLORS
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -30,18 +24,30 @@ from styles import COLORS
 configure_page(title="Home", icon="📊", layout="wide")
 
 # ============================================================================
-# SIDEBAR
+# SIDEBAR - CLEAN PROFESSIONAL DESIGN
 # ============================================================================
 
 add_sidebar_logo()
 
-st.sidebar.markdown("### 🎯 Navigation")
-st.sidebar.info("""
-**Welcome to RetailPulse!**
+st.sidebar.markdown("""
+<div style="margin-bottom: 1.5rem;">
+    <div style="
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #9ca3af;
+        margin-bottom: 0.75rem;
+    ">Navigation</div>
+</div>
+""", unsafe_allow_html=True)
 
-Use the pages in the sidebar to explore:
+st.sidebar.info("""
+**Quick Access**
+
+Navigate to different sections:
 - 📈 Sales Dashboard
-- 👥 Customer Analytics
+- 👥 Customer Analytics  
 - 🔮 Demand Forecasting
 - 📦 Inventory Management
 """)
@@ -78,27 +84,6 @@ def load_and_prepare_data():
 df, current_df, previous_df = load_and_prepare_data()
 
 # ============================================================================
-# HEADER SECTION
-# ============================================================================
-
-st.markdown(f"""
-<div style="margin-bottom: 2rem;">
-    <h1 style="
-        font-family: 'Hanken Grotesk', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        color: {COLORS['on_surface']};
-        margin-bottom: 0.5rem;
-    ">Good Morning, Amanda 👋</h1>
-    <p style="
-        font-size: 14px;
-        color: {COLORS['on_surface_variant']};
-        margin: 0;
-    ">Here's your operational data snapshot for today • {datetime.now().strftime('%B %d, %Y')}</p>
-</div>
-""", unsafe_allow_html=True)
-
-# ============================================================================
 # CHECK DATA AVAILABILITY
 # ============================================================================
 
@@ -118,7 +103,7 @@ for col in ['TotalPrice', 'Revenue', 'Amount', 'Total']:
         break
 
 if revenue_col is None:
-    st.error("⚠️ Could not find revenue column in data. Expected columns: TotalPrice, Revenue, Amount, or Total")
+    st.error("⚠️ Could not find revenue column in data.")
     st.stop()
 
 # Current period metrics
@@ -134,20 +119,80 @@ if not previous_df.empty:
     previous_customers = len(previous_df['CustomerID'].unique()) if 'CustomerID' in previous_df.columns else 0
     previous_avg_order = previous_revenue / previous_orders if previous_orders > 0 else 0
     
-    # Calculate changes
-    revenue_change = calculate_percentage_change(current_revenue, previous_revenue)
-    orders_change = calculate_percentage_change(current_orders, previous_orders)
-    customers_change = calculate_percentage_change(current_customers, previous_customers)
-    avg_order_change = calculate_percentage_change(current_avg_order, previous_avg_order)
+    revenue_change = ((current_revenue - previous_revenue) / previous_revenue * 100) if previous_revenue > 0 else 0
+    orders_change = ((current_orders - previous_orders) / previous_orders * 100) if previous_orders > 0 else 0
+    customers_change = ((current_customers - previous_customers) / previous_customers * 100) if previous_customers > 0 else 0
+    avg_order_change = ((current_avg_order - previous_avg_order) / previous_avg_order * 100) if previous_avg_order > 0 else 0
 else:
+    previous_revenue = previous_orders = previous_customers = previous_avg_order = 0
     revenue_change = orders_change = customers_change = avg_order_change = 0
 
+# Conversion rate
+conversion_rate = (current_customers / current_orders * 100) if current_orders > 0 else 0
+prev_conversion_rate = (previous_customers / previous_orders * 100) if previous_orders > 0 else 0
+conversion_change = conversion_rate - prev_conversion_rate
+
 # ============================================================================
-# KPI BENTO GRID
+# HEADER - PURE HTML
 # ============================================================================
 
-st.markdown("### 📊 Key Performance Indicators")
-st.markdown("<p style='color: #434655; font-size: 14px; margin-top: -10px; margin-bottom: 1.5rem;'>Last 30 days performance overview</p>", unsafe_allow_html=True)
+st.markdown(f"""
+<div style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+">
+    <div>
+        <h1 style="
+            font-family: 'Inter', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0 0 0.25rem 0;
+        ">Good Morning, Jacob</h1>
+        <p style="
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+        ">Here's what's happening in RetailPulse today.</p>
+    </div>
+    <div style="
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #f9fafb;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    ">
+        <div style="text-align: right;">
+            <div style="font-size: 13px; font-weight: 600; color: #1a1a1a;">Jacob Smith</div>
+            <div style="font-size: 11px; color: #6b7280;">Senior Admin</div>
+        </div>
+        <div style="
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        ">JS</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ============================================================================
+# KPI CARDS - Using Streamlit Metrics
+# ============================================================================
+
+st.markdown("### 📊 Key Metrics")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -155,247 +200,60 @@ with col1:
     st.metric(
         label="💰 TOTAL REVENUE",
         value=format_currency(current_revenue),
-        delta=f"{revenue_change:+.1f}%",
-        delta_color="normal"
+        delta=f"{revenue_change:+.1f}% vs last month" if revenue_change != 0 else None
     )
-    st.caption(f"vs. {format_currency(previous_revenue if not previous_df.empty else 0)} last period")
 
 with col2:
     st.metric(
         label="🛒 ORDERS PLACED",
         value=format_number(current_orders),
-        delta=f"{orders_change:+.1f}%",
-        delta_color="normal"
+        delta=f"{orders_change:+.1f}% vs last month" if orders_change != 0 else None
     )
-    st.caption(f"vs. {format_number(previous_orders if not previous_df.empty else 0)} last period")
 
 with col3:
     st.metric(
-        label="📦 AVG. ORDER VALUE",
+        label="💳 AVG. ORDER VALUE",
         value=format_currency(current_avg_order),
-        delta=f"{avg_order_change:+.1f}%",
-        delta_color="normal"
+        delta=f"{avg_order_change:+.1f}% vs last month" if avg_order_change != 0 else None
     )
-    st.caption(f"vs. {format_currency(previous_avg_order if not previous_df.empty else 0)} last period")
 
 with col4:
     st.metric(
-        label="👥 ACTIVE CUSTOMERS",
-        value=format_number(current_customers),
-        delta=f"{customers_change:+.1f}%",
-        delta_color="normal"
+        label="👥 CONVERSION RATE",
+        value=f"{conversion_rate:.1f}%",
+        delta=f"{conversion_change:+.1f}% vs last month" if conversion_change != 0 else None
     )
-    st.caption(f"vs. {format_number(previous_customers if not previous_df.empty else 0)} last period")
+
+# ============================================================================
+# PROJECT OVERVIEW
+# ============================================================================
 
 st.markdown("---")
 
-# ============================================================================
-# PROJECT OVERVIEW SECTION
-# ============================================================================
-
-col_left, col_right = st.columns([2, 1])
-
-with col_left:
-    st.markdown("### 🎯 About RetailPulse")
-    
-    st.markdown("""
-    **RetailPulse** is an AI-powered analytics platform designed for retail enterprise operators 
-    and senior administrators. Our suite provides comprehensive insights across four key areas:
-    
-    #### 📈 Sales Analytics
-    Track revenue trends, analyze product performance, and monitor sales metrics across regions 
-    and time periods. Identify top-performing products and optimize pricing strategies.
-    
-    #### 👥 Customer Intelligence
-    Understand customer behavior through RFM analysis and segmentation. Identify high-value 
-    customers, predict churn risk, and create targeted retention campaigns.
-    
-    #### 🔮 Demand Forecasting
-    Leverage machine learning models (Prophet/ARIMA/LSTM) to predict future demand patterns. 
-    Plan inventory and resources based on data-driven forecasts.
-    
-    #### 📦 Inventory Optimization
-    Receive intelligent reorder recommendations, identify low-stock and overstock situations, 
-    and maintain optimal inventory levels to reduce costs.
-    """)
-
-with col_right:
-    st.markdown("### 🚀 Quick Start")
-    
-    st.markdown("""
-    <div style="
-        background-color: #f7f9fb;
-        border: 1px solid #c3c6d7;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
+st.markdown("""
+<div style="margin: 2rem 0;">
+    <h2 style="
+        font-family: 'Inter', sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        color: #1a1a1a;
         margin-bottom: 1rem;
-    ">
-        <h4 style="margin-top: 0; color: #004ac6;">📊 Explore Dashboards</h4>
-        <p style="font-size: 14px; color: #434655;">
-            Navigate using the sidebar to access:
-        </p>
-        <ul style="font-size: 14px; color: #434655;">
-            <li><strong>Sales Dashboard</strong> - Revenue & trends</li>
-            <li><strong>Customer Dashboard</strong> - Segmentation</li>
-            <li><strong>Forecast Dashboard</strong> - Predictions</li>
-            <li><strong>Inventory Dashboard</strong> - Stock alerts</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="
-        background-color: #6ffbbe;
-        border: 1px solid #005236;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
-    ">
-        <h4 style="margin-top: 0; color: #005236;">✨ Key Features</h4>
-        <ul style="font-size: 14px; color: #005236; margin-bottom: 0;">
-            <li>Real-time KPI monitoring</li>
-            <li>Interactive visualizations</li>
-            <li>Advanced filtering options</li>
-            <li>Export capabilities</li>
-            <li>Mobile-responsive design</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# ============================================================================
-# DATA OVERVIEW SECTION
-# ============================================================================
-
-st.markdown("### 📋 Data Overview")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown(f"""
-    <div style="
-        background-color: white;
-        border: 1px solid #c3c6d7;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
-        text-align: center;
-    ">
-        <p style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #434655; margin-bottom: 0.5rem;">
-            Total Records
-        </p>
-        <h2 style="font-family: 'Hanken Grotesk', sans-serif; font-size: 32px; font-weight: 700; color: #191c1e; margin: 0;">
-            {format_number(len(df))}
-        </h2>
-        <p style="font-size: 12px; color: #434655; margin-top: 0.5rem;">
-            Transactions in database
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    date_range = "N/A"
-    if 'InvoiceDate' in df.columns:
-        min_date = df['InvoiceDate'].min().strftime('%b %Y')
-        max_date = df['InvoiceDate'].max().strftime('%b %Y')
-        date_range = f"{min_date} - {max_date}"
-    
-    st.markdown(f"""
-    <div style="
-        background-color: white;
-        border: 1px solid #c3c6d7;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
-        text-align: center;
-    ">
-        <p style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #434655; margin-bottom: 0.5rem;">
-            Date Range
-        </p>
-        <h3 style="font-family: 'Hanken Grotesk', sans-serif; font-size: 18px; font-weight: 600; color: #191c1e; margin: 0.5rem 0;">
-            {date_range}
-        </h3>
-        <p style="font-size: 12px; color: #434655; margin-top: 0.5rem;">
-            Historical data period
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    total_products = len(df['StockCode'].unique()) if 'StockCode' in df.columns else 0
-    
-    st.markdown(f"""
-    <div style="
-        background-color: white;
-        border: 1px solid #c3c6d7;
-        border-radius: 0.75rem;
-        padding: 1.25rem;
-        text-align: center;
-    ">
-        <p style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #434655; margin-bottom: 0.5rem;">
-            Unique Products
-        </p>
-        <h2 style="font-family: 'Hanken Grotesk', sans-serif; font-size: 32px; font-weight: 700; color: #191c1e; margin: 0;">
-            {format_number(total_products)}
-        </h2>
-        <p style="font-size: 12px; color: #434655; margin-top: 0.5rem;">
-            SKUs in catalog
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# ============================================================================
-# TEAM INFORMATION
-# ============================================================================
-
-st.markdown("### 👥 Project Team")
-
-team_col1, team_col2, team_col3, team_col4 = st.columns(4)
-
-with team_col1:
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem;">
-        <div style="font-size: 48px; margin-bottom: 0.5rem;">🧹</div>
-        <h4 style="margin: 0; color: #191c1e;">Member 1</h4>
-        <p style="font-size: 12px; color: #434655; margin: 0.25rem 0;">Data Cleaning & EDA</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with team_col2:
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem;">
-        <div style="font-size: 48px; margin-bottom: 0.5rem;">👥</div>
-        <h4 style="margin: 0; color: #191c1e;">Member 2</h4>
-        <p style="font-size: 12px; color: #434655; margin: 0.25rem 0;">Customer Analytics</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with team_col3:
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem;">
-        <div style="font-size: 48px; margin-bottom: 0.5rem;">🔮</div>
-        <h4 style="margin: 0; color: #191c1e;">Member 3</h4>
-        <p style="font-size: 12px; color: #434655; margin: 0.25rem 0;">Demand Forecasting</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-with team_col4:
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem;">
-        <div style="font-size: 48px; margin-bottom: 0.5rem;">🚀</div>
-        <h4 style="margin: 0; color: #191c1e;">Member 4</h4>
-        <p style="font-size: 12px; color: #434655; margin: 0.25rem 0;">Dashboard & Deployment</p>
-    </div>
-    """, unsafe_allow_html=True)
+    ">🎯 About RetailPulse</h2>
+    <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">
+        RetailPulse is an AI-powered analytics platform designed for retail enterprise operators.
+        Our suite provides comprehensive insights across sales analytics, customer intelligence,
+        demand forecasting, and inventory optimization.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # FOOTER
 # ============================================================================
 
-st.markdown("---")
 st.markdown("""
-<div style="text-align: center; padding: 2rem 0 1rem 0; color: #434655; font-size: 12px;">
+<div style="text-align: center; padding: 2rem 0 1rem 0; color: #9ca3af; font-size: 13px; border-top: 1px solid #e5e7eb; margin-top: 3rem;">
     <p style="margin: 0;">© 2026 RetailPulse Analytics Management Suite</p>
-    <p style="margin: 0.5rem 0 0 0;">AI-Powered Customer Analytics & Demand Forecasting Platform</p>
+    <p style="margin: 0.5rem 0 0 0;">Built by Het Patel, Ved Zala, Parth Shah & Atharva Lotankar</p>
 </div>
 """, unsafe_allow_html=True)

@@ -1,45 +1,54 @@
 """
 RetailPulse Design System Tokens
-Based on design.md specifications for enterprise-grade UI/UX
+Modern light mode design with proper contrast
 """
 
 # ============================================================================
-# COLOR PALETTE & SEMANTIC ASSIGNMENT
+# MODERN COLOR PALETTE
 # ============================================================================
 
 COLORS = {
     # Primary Brand Tokens
-    "primary": "#004ac6",
-    "primary_container": "#2563eb",
+    "primary": "#3b82f6",
+    "primary_hover": "#2563eb",
+    "primary_light": "#dbeafe",
     "on_primary": "#ffffff",
     
-    # Secondary Neutral Tokens
-    "background_light": "#f7f9fb",
-    "surface_container": "#eceef0",
-    "surface_lowest": "#ffffff",
-    "surface_bright": "#f7f9fb",
-    "surface_container_low": "#f2f4f6",
-    "outline_variant": "#c3c6d7",
+    # Background & Surface
+    "background": "#f8fafc",
+    "surface": "#ffffff",
+    "surface_hover": "#f1f5f9",
+    "border": "#e2e8f0",
+    "border_light": "#f1f5f9",
     
-    # Text Colors
-    "on_surface": "#191c1e",
-    "on_surface_variant": "#434655",
+    # Text Colors (proper contrast)
+    "text_primary": "#0f172a",
+    "text_secondary": "#475569",
+    "text_tertiary": "#94a3b8",
     
-    # Semantic Telemetry Tokens
-    "success": "#006242",
-    "success_container": "#6ffbbe",
-    "on_success_fixed_variant": "#005236",
-    
-    "error": "#ba1a1a",
-    "error_container": "#ffdad6",
-    "on_error_container": "#93000a",
-    
+    # Semantic Colors
+    "success": "#10b981",
+    "success_light": "#d1fae5",
     "warning": "#f59e0b",
-    "warning_container": "#fef3c7",
+    "warning_light": "#fef3c7",
+    "error": "#ef4444",
+    "error_light": "#fee2e2",
+    "info": "#3b82f6",
+    "info_light": "#dbeafe",
     
-    "info": "#2563eb",
-    "info_container": "#d3e4fe",
-    "on_info_fixed_variant": "#38485d",
+    # ALL Backward compatibility aliases
+    "surface_lowest": "#ffffff",
+    "outline_variant": "#e2e8f0",
+    "on_surface": "#0f172a",
+    "on_surface_variant": "#475569",
+    "primary_container": "#2563eb",
+    "success_container": "#d1fae5",
+    "error_container": "#fee2e2",
+    "warning_container": "#fef3c7",
+    "info_container": "#dbeafe",
+    "on_success_fixed_variant": "#065f46",
+    "on_error_container": "#991b1b",
+    "on_info_fixed_variant": "#1e40af",
 }
 
 # ============================================================================
@@ -125,8 +134,8 @@ BORDER_RADIUS = {
 
 # KPI Bento Card Styles
 BENTO_CARD = {
-    "background": COLORS["surface_lowest"],
-    "border": f"1px solid {COLORS['outline_variant']}",
+    "background": COLORS["surface"],
+    "border": f"1px solid {COLORS['border']}",
     "border_radius": BORDER_RADIUS["xl"],
     "padding": SPACING["stack_md"],
     "shadow": "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
@@ -135,23 +144,23 @@ BENTO_CARD = {
 # Status Badge Styles
 STATUS_BADGES = {
     "success": {
-        "background": COLORS["success_container"],
-        "color": COLORS["on_success_fixed_variant"],
+        "background": COLORS["success_light"],
+        "color": COLORS["success"],
         "text": "SUCCESS"
     },
     "pending": {
-        "background": COLORS["info_container"],
-        "color": COLORS["on_info_fixed_variant"],
+        "background": COLORS["info_light"],
+        "color": COLORS["info"],
         "text": "PENDING"
     },
     "refunded": {
-        "background": COLORS["error_container"],
-        "color": COLORS["on_error_container"],
+        "background": COLORS["error_light"],
+        "color": COLORS["error"],
         "text": "REFUNDED"
     },
     "warning": {
-        "background": COLORS["warning_container"],
-        "color": "#92400e",
+        "background": COLORS["warning_light"],
+        "color": COLORS["warning"],
         "text": "WARNING"
     },
 }
@@ -161,12 +170,12 @@ TREND_INDICATORS = {
     "positive": {
         "color": COLORS["success"],
         "icon": "↗",
-        "background": COLORS["success_container"],
+        "background": COLORS["success_light"],
     },
     "negative": {
         "color": COLORS["error"],
         "icon": "↘",
-        "background": COLORS["error_container"],
+        "background": COLORS["error_light"],
     },
 }
 

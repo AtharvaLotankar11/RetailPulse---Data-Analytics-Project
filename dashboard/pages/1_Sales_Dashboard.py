@@ -23,7 +23,7 @@ from utils import (
     add_sidebar_footer,
     create_download_button
 )
-from styles import COLORS
+from design_system import COLORS, ICONS, create_kpi_card, render_html
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -143,32 +143,36 @@ add_sidebar_footer()
 # HEADER
 # ============================================================================
 
-st.markdown(f"""
-<h1 style="
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: {COLORS['on_surface']};
-    margin-bottom: 0.5rem;
-">📈 Sales Dashboard</h1>
-<p style="
-    font-size: 14px;
-    color: {COLORS['on_surface_variant']};
-    margin-bottom: 2rem;
-">Revenue analytics, trends, and product performance insights</p>
-""", unsafe_allow_html=True)
+render_html(f"""
+<div style="margin-bottom: 2rem;">
+    <h1 style="
+        font-family: 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: {COLORS['text_primary']};
+        margin: 0 0 0.25rem 0;
+    ">Sales Dashboard</h1>
+    <p style="
+        font-size: 14px;
+        color: {COLORS['text_secondary']};
+        margin: 0;
+    ">Revenue analytics, trends, and product performance insights</p>
+</div>
+""")
 
 # ============================================================================
 # SALES KPI METRICS
 # ============================================================================
 
-col1, col2, col3, col4 = st.columns(4)
+st.markdown("### 📊 Sales Metrics")
 
 # Calculate metrics
 total_revenue = filtered_df[revenue_col].sum()
 total_orders = len(filtered_df['InvoiceNo'].unique()) if 'InvoiceNo' in filtered_df.columns else len(filtered_df)
 total_customers = len(filtered_df['CustomerID'].unique()) if 'CustomerID' in filtered_df.columns else 0
 avg_order_value = total_revenue / total_orders if total_orders > 0 else 0
+
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
@@ -247,7 +251,7 @@ with col_left:
             height=400
         )
         
-        st.plotly_chart(fig_monthly, use_container_width=True)
+        st.plotly_chart(fig_monthly, width='stretch')
     else:
         st.info("No data available for the selected filters.")
 
@@ -287,7 +291,7 @@ with col_right:
                 margin=dict(l=0, r=0, t=20, b=0)
             )
             
-            st.plotly_chart(fig_top_products, use_container_width=True)
+            st.plotly_chart(fig_top_products, width='stretch')
         else:
             st.info("No product data available.")
     else:
@@ -332,7 +336,7 @@ with col_left2:
                 height=400
             )
             
-            st.plotly_chart(fig_country, use_container_width=True)
+            st.plotly_chart(fig_country, width='stretch')
         else:
             st.info("No country data available.")
     else:
@@ -375,7 +379,7 @@ with col_right2:
             height=400
         )
         
-        st.plotly_chart(fig_daily, use_container_width=True)
+        st.plotly_chart(fig_daily, width='stretch')
     else:
         st.info("No daily data available.")
 
@@ -415,7 +419,7 @@ if available_cols:
     
     st.dataframe(
         display_df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         height=400
     )

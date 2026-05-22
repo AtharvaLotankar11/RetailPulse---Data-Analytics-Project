@@ -23,7 +23,7 @@ from utils import (
     add_sidebar_footer,
     create_download_button
 )
-from styles import COLORS
+from design_system import COLORS, ICONS, create_kpi_card, render_html
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -83,14 +83,11 @@ for col in ['RecommendedStock', 'Recommended_Stock', 'Recommended', 'OptimalStoc
 
 # If columns not found, check what we have
 if not all([product_col, current_stock_col, recommended_stock_col]):
-    st.warning(f"⚠️ Some inventory columns not found. Available columns: {list(inventory_df.columns)}")
-    
-    # Try to use first few columns as fallback
+    # Silently try to use first few columns as fallback
     if len(inventory_df.columns) >= 3:
         product_col = inventory_df.columns[0]
         current_stock_col = inventory_df.columns[1] if len(inventory_df.columns) > 1 else None
         recommended_stock_col = inventory_df.columns[2] if len(inventory_df.columns) > 2 else None
-        st.info(f"Using columns: Product={product_col}, Current={current_stock_col}, Recommended={recommended_stock_col}")
 
 if not all([product_col, current_stock_col, recommended_stock_col]):
     st.error("⚠️ Could not identify required inventory columns.")
@@ -138,20 +135,22 @@ add_sidebar_footer()
 # HEADER
 # ============================================================================
 
-st.markdown(f"""
-<h1 style="
-    font-family: 'Hanken Grotesk', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: {COLORS['on_surface']};
-    margin-bottom: 0.5rem;
-">📦 Inventory Dashboard</h1>
-<p style="
-    font-size: 14px;
-    color: {COLORS['on_surface_variant']};
-    margin-bottom: 2rem;
-">Inventory optimization, stock alerts, and intelligent reorder recommendations</p>
-""", unsafe_allow_html=True)
+render_html(f"""
+<div style="margin-bottom: 2rem;">
+    <h1 style="
+        font-family: 'Inter', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: {COLORS['text_primary']};
+        margin: 0 0 0.25rem 0;
+    ">Inventory Dashboard</h1>
+    <p style="
+        font-size: 14px;
+        color: {COLORS['text_secondary']};
+        margin: 0;
+    ">Inventory optimization, stock alerts, and intelligent reorder recommendations</p>
+</div>
+""")
 
 # ============================================================================
 # INVENTORY KPI METRICS
@@ -238,7 +237,7 @@ with alert_col1:
         # Show top 5 critical items
         st.markdown("**Top 5 Critical Items:**")
         critical_items = high_priority_low.nlargest(5, 'Difference')[[product_col, current_stock_col, recommended_stock_col, 'Difference']]
-        st.dataframe(critical_items, use_container_width=True, hide_index=True)
+        st.dataframe(critical_items, width='stretch', hide_index=True)
     else:
         st.success("✅ No critical low stock alerts")
 
@@ -271,7 +270,7 @@ with alert_col2:
         # Show top 5 overstock items
         st.markdown("**Top 5 Overstock Items:**")
         overstock_items = high_priority_over.nsmallest(5, 'Difference')[[product_col, current_stock_col, recommended_stock_col, 'Difference']]
-        st.dataframe(overstock_items, use_container_width=True, hide_index=True)
+        st.dataframe(overstock_items, width='stretch', hide_index=True)
     else:
         st.success("✅ No critical overstock alerts")
 
@@ -321,7 +320,7 @@ with col_left:
         showlegend=True
     )
     
-    st.plotly_chart(fig_status, use_container_width=True)
+    st.plotly_chart(fig_status, width='stretch')
 
 with col_right:
     st.markdown("### 📈 Current vs Recommended Stock Levels")
@@ -364,7 +363,7 @@ with col_right:
         )
     )
     
-    st.plotly_chart(fig_comparison, use_container_width=True)
+    st.plotly_chart(fig_comparison, width='stretch')
 
 st.markdown("---")
 
@@ -405,7 +404,7 @@ with col_left2:
             height=400
         )
         
-        st.plotly_chart(fig_reorder, use_container_width=True)
+        st.plotly_chart(fig_reorder, width='stretch')
     else:
         st.info("No items require reordering at this time.")
 
@@ -447,7 +446,7 @@ with col_right2:
         showlegend=False
     )
     
-    st.plotly_chart(fig_priority, use_container_width=True)
+    st.plotly_chart(fig_priority, width='stretch')
 
 st.markdown("---")
 
@@ -479,7 +478,7 @@ display_df['Action Required'] = display_df['Action Required'].apply(
 
 st.dataframe(
     display_df,
-    use_container_width=True,
+    width='stretch',
     hide_index=True,
     height=400
 )

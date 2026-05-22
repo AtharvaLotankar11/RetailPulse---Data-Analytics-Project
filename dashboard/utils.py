@@ -6,6 +6,7 @@ Helper functions for data loading, CSS injection, and common operations
 import streamlit as st
 import pandas as pd
 import os
+import base64
 from pathlib import Path
 
 # ============================================================================
@@ -23,6 +24,45 @@ def get_data_path(filename):
 def get_asset_path(filename):
     """Get full path to an asset file"""
     return get_project_root() / "dashboard" / "assets" / filename
+
+# ============================================================================
+# LOGO HELPER
+# ============================================================================
+
+def get_logo_base64():
+    """Load and encode RetailPulse logo to base64"""
+    logo_path = get_project_root() / "assets" / "retailpulse-logo.png"
+    try:
+        with open(logo_path, 'rb') as f:
+            logo_data = f.read()
+        return base64.b64encode(logo_data).decode()
+    except FileNotFoundError:
+        st.warning("⚠️ Logo file not found at assets/retailpulse-logo.png")
+        return ""
+
+def add_sidebar_logo():
+    """Add RetailPulse logo to sidebar - Uses st.logo() to appear at top"""
+    logo_path = get_project_root() / "assets" / "retailpulse-logo.png"
+    
+    # Use st.logo() which automatically appears at the top of sidebar
+    # icon_image is the main logo, link is optional
+    if logo_path.exists():
+        st.logo(
+            image=str(logo_path),
+            icon_image=str(logo_path)
+        )
+    else:
+        # Fallback to markdown if logo file not found
+        st.sidebar.markdown("""
+        <div style="
+            text-align: center; 
+            padding: 1rem 0 1.5rem 0; 
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        ">
+            <h2 style="color: #3b82f6; margin: 0;">RetailPulse</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
 # ============================================================================
 # CSS INJECTION
@@ -63,6 +103,13 @@ def load_retail_data():
         if 'InvoiceDate' in df.columns:
             df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'], format='mixed', errors='coerce')
         
+        # Standardize column names for consistency
+        column_mapping = {
+            'Invoice': 'InvoiceNo',
+            'Customer ID': 'CustomerID'
+        }
+        df = df.rename(columns=column_mapping)
+        
         return df
     except FileNotFoundError:
         st.error("❌ cleaned_retail.csv not found in data/ directory")
@@ -81,6 +128,13 @@ def load_customer_segments():
     """
     try:
         df = pd.read_csv(get_data_path("customer_segments.csv"))
+        
+        # Standardize column names for consistency
+        column_mapping = {
+            'Customer ID': 'CustomerID'
+        }
+        df = df.rename(columns=column_mapping)
+        
         return df
     except FileNotFoundError:
         st.error("❌ customer_segments.csv not found in data/ directory")
@@ -153,6 +207,25 @@ def configure_page(title, icon="📊", layout="wide"):
         initial_sidebar_state="expanded"
     )
     
+    # FORCE sidebar to be visible with CSS
+    st.markdown("""
+    <style>
+    /* FORCE SIDEBAR VISIBLE */
+    section[data-testid="stSidebar"] {
+        display: block !important;
+        visibility: visible !important;
+        width: 21rem !important;
+        min-width: 21rem !important;
+    }
+    
+    section[data-testid="stSidebar"][aria-expanded="false"] {
+        display: block !important;
+        margin-left: 0 !important;
+        transform: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # Load custom CSS
     load_css()
 
@@ -210,40 +283,7 @@ def get_date_range_filter():
 # ============================================================================
 # SIDEBAR HELPERS
 # ============================================================================
-
-def add_sidebar_logo():
-    """Add RetailPulse logo to sidebar"""
-    st.sidebar.markdown("""
-    <div style="text-align: center; padding: 1rem 0 2rem 0;">
-        <div style="
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.5rem;
-        ">
-            <span style="color: white; font-size: 24px;">📊</span>
-        </div>
-        <h2 style="
-            font-family: 'Hanken Grotesk', sans-serif;
-            font-weight: 700;
-            font-size: 20px;
-            color: #004ac6;
-            margin: 0;
-        ">RetailPulse</h2>
-        <p style="
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #434655;
-            margin: 0;
-        ">Analytics Suite</p>
-    </div>
-    """, unsafe_allow_html=True)
+# Note: add_sidebar_logo() is defined earlier in the file (line ~44)
 
 def add_sidebar_footer():
     """Add footer to sidebar"""
