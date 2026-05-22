@@ -33,10 +33,16 @@ def load_css():
     css_file = get_asset_path("custom.css")
     
     if css_file.exists():
-        with open(css_file) as f:
+        with open(css_file, encoding='utf-8') as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     else:
-        st.warning("Custom CSS file not found. Using default Streamlit styling.")
+        # Try alternative path
+        alt_css_path = Path(__file__).parent / "assets" / "custom.css"
+        if alt_css_path.exists():
+            with open(alt_css_path, encoding='utf-8') as f:
+                st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ Custom CSS file not found. Using default Streamlit styling.")
 
 # ============================================================================
 # DATA LOADING FUNCTIONS
@@ -53,9 +59,9 @@ def load_retail_data():
     try:
         df = pd.read_csv(get_data_path("cleaned_retail.csv"))
         
-        # Convert date columns
+        # Convert date columns with flexible parsing
         if 'InvoiceDate' in df.columns:
-            df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+            df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'], format='mixed', errors='coerce')
         
         return df
     except FileNotFoundError:
