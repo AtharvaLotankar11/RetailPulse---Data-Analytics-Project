@@ -807,7 +807,7 @@ Team:
 # 📸 Dashboard Screenshots
 
 ## Home Page
-![Home Dashboard](assets/screenshots/home_dashboard.png)
+![Home Dashboard](assets/screenshots/home.png)
 *Overview page with KPIs and quick insights*
 
 ## Sales Dashboard
@@ -825,13 +825,6 @@ Team:
 ## Inventory Dashboard
 ![Inventory Dashboard](assets/screenshots/inventory_dashboard.png)
 *Stock alerts and inventory recommendations*
-
-> **Note:** Screenshots will be added after deployment. To capture screenshots:
-> 1. Run the dashboard locally or access the deployed version
-> 2. Navigate to each page
-> 3. Take full-page screenshots
-> 4. Save them in `assets/screenshots/` directory
-> 5. Update the image paths above
 
 ---
 
