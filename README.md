@@ -707,9 +707,11 @@ streamlit run dashboard/Home.py
 
 ## Live Application
 
-🚀 **Live Demo:** [RetailPulse Dashboard](https://your-deployment-url-here.streamlit.app)
+🚀 **Live Demo:** [RetailPulse Dashboard](https://retailpulse-analytics.streamlit.app)
 
-> **Note:** Replace the URL above with your actual Streamlit Cloud deployment link after deployment.
+✅ **Status:** Successfully deployed and operational!
+
+> Access the live dashboard to explore customer analytics, sales trends, demand forecasting, and inventory management in real-time.
 
 ## Deployment Platforms
 
