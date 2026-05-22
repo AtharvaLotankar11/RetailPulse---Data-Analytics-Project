@@ -294,6 +294,44 @@ def configure_page(title, icon="📊", layout="wide"):
     [data-testid="column"] {
         flex: 1 !important;
     }
+    
+    /* MOBILE RESPONSIVE DESIGN */
+    @media (max-width: 768px) {
+        .main .block-container {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            padding-top: 1rem !important;
+        }
+        
+        /* Stack columns on mobile */
+        [data-testid="column"] {
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+        
+        /* Reduce font sizes on mobile */
+        h1 {
+            font-size: 24px !important;
+        }
+        
+        h2 {
+            font-size: 20px !important;
+        }
+        
+        h3 {
+            font-size: 18px !important;
+        }
+        
+        /* Make buttons full width on mobile */
+        .stButton > button {
+            width: 100% !important;
+        }
+        
+        /* Adjust sidebar for mobile */
+        section[data-testid="stSidebar"] {
+            width: 100% !important;
+        }
+    }
     </style>
     """, unsafe_allow_html=True)
     
