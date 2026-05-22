@@ -33,13 +33,116 @@ from design_system import COLORS, ICONS, create_kpi_card, render_html
 configure_page(title="Forecast Dashboard", icon="🔮", layout="wide")
 
 # ============================================================================
+# CUSTOM CSS FOR STITCH DESIGN
+# ============================================================================
+
+st.markdown("""
+<style>
+/* Search bar styling */
+.stTextInput > div > div > input {
+    background-color: #F8F9FA;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+}
+
+/* KPI Card with icon badge */
+.kpi-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.kpi-label {
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1A1A1A;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-delta {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.kpi-delta.positive {
+    color: #10B981;
+}
+
+.kpi-delta.negative {
+    color: #EF4444;
+}
+
+/* Button styling */
+.stButton > button {
+    background: #0066FF !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.stButton > button:hover {
+    background: #0052CC !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================================
 # SIDEBAR
 # ============================================================================
 
-add_sidebar_logo()
+# Note: Streamlit automatically adds logo and navigation at the top
+# Our sidebar content appears AFTER the navigation
 
-st.sidebar.markdown("### 🔮 Forecast Dashboard")
-st.sidebar.markdown("Demand forecasting and predictive analytics for inventory planning.")
+st.sidebar.markdown("---")
+
+# Export Report Button
+if st.sidebar.button("📥 Export Report", use_container_width=True):
+    st.sidebar.success("Report exported successfully!")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🔮 Demand Forecasting")
+st.sidebar.markdown("Predict future demand and optimize inventory planning.")
+
+# Settings and Logout at bottom
+st.sidebar.markdown("""
+<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>⚙️</span>
+        <span>Settings</span>
+    </div>
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>🚪</span>
+        <span>Logout</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # LOAD DATA
@@ -131,29 +234,53 @@ if st.sidebar.button("🔄 Reset Filters"):
 add_sidebar_footer()
 
 # ============================================================================
-# HEADER
+# HEADER WITH SEARCH BAR
 # ============================================================================
 
-render_html(f"""
-<div style="margin-bottom: 2rem;">
-    <h1 style="
-        font-family: 'Inter', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        color: {COLORS['text_primary']};
-        margin: 0 0 0.25rem 0;
-    ">Forecast Dashboard</h1>
-    <p style="
-        font-size: 14px;
-        color: {COLORS['text_secondary']};
-        margin: 0;
-    ">Demand forecasting and predictive analytics for strategic planning</p>
+# Top row: Title and User Profile
+st.markdown("""
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Demand Forecasting 🔮</h1>
+        <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Predict future demand and plan inventory strategically</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="text-align: right;">
+            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
+            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
+        </div>
+        <div style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0066FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+        ">👤</div>
+    </div>
 </div>
-""")
+""", unsafe_allow_html=True)
+
+# Search bar and Advanced Filter
+col_search, col_filter = st.columns([4, 1])
+
+with col_search:
+    st.text_input("🔍 Search", placeholder="Search forecasts, demand trends, predictions...", label_visibility="collapsed")
+
+with col_filter:
+    st.button("⚡ Quick Filters", use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ============================================================================
-# FORECAST KPI METRICS
+# FORECAST KPI METRICS WITH ICON BADGES
 # ============================================================================
+
+st.markdown("### 📊 Forecast Metrics")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -186,43 +313,67 @@ if not historical_df.empty:
             growth_percentage = ((avg_daily_forecast - historical_avg) / historical_avg) * 100
 
 with col1:
-    st.metric(
-        label="📊 TOTAL PREDICTED DEMAND",
-        value=format_currency(total_predicted_demand),
-        delta=None
-    )
-    st.caption(f"For next {horizon_days} days")
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #EFF6FF;">
+            <span style="font-size: 24px;">📊</span>
+        </div>
+        <div class="kpi-label">TOTAL PREDICTED DEMAND</div>
+        <div class="kpi-value">{format_currency(total_predicted_demand)}</div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">For next {horizon_days} days</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.metric(
-        label="📈 AVG DAILY FORECAST",
-        value=format_currency(avg_daily_forecast),
-        delta=f"{growth_percentage:+.1f}% vs historical" if growth_percentage != 0 else None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #DBEAFE;">
+            <span style="font-size: 24px;">📈</span>
+        </div>
+        <div class="kpi-label">AVG DAILY FORECAST</div>
+        <div class="kpi-value">{format_currency(avg_daily_forecast)}</div>
+        <div class="kpi-delta {'positive' if growth_percentage >= 0 else 'negative'}">
+            {'↗' if growth_percentage >= 0 else '↘'} {abs(growth_percentage):.1f}% vs historical
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.metric(
-        label="🎯 PEAK DEMAND",
-        value=format_currency(peak_demand),
-        delta=None
-    )
-    st.caption(f"Expected on {peak_date.strftime('%b %d, %Y')}")
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #FCE7F3;">
+            <span style="font-size: 24px;">🎯</span>
+        </div>
+        <div class="kpi-label">PEAK DEMAND</div>
+        <div class="kpi-value">{format_currency(peak_demand)}</div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">Expected on {peak_date.strftime('%b %d, %Y')}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col4:
     # Calculate forecast confidence (if available)
     confidence_cols = [col for col in forecast_df.columns if 'confidence' in col.lower() or 'upper' in col.lower()]
     if confidence_cols:
-        st.metric(
-            label="✅ FORECAST CONFIDENCE",
-            value="High",
-            delta="95% CI available"
-        )
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: #D1FAE5;">
+                <span style="font-size: 24px;">✅</span>
+            </div>
+            <div class="kpi-label">FORECAST CONFIDENCE</div>
+            <div class="kpi-value">High</div>
+            <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">95% CI available</div>
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.metric(
-            label="📅 FORECAST RANGE",
-            value=f"{horizon_days} days",
-            delta=None
-        )
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: #D1FAE5;">
+                <span style="font-size: 24px;">📅</span>
+            </div>
+            <div class="kpi-label">FORECAST RANGE</div>
+            <div class="kpi-value">{horizon_days} days</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 st.markdown("---")
 

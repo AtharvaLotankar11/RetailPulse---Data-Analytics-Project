@@ -32,13 +32,116 @@ from design_system import COLORS, ICONS, create_kpi_card, render_html
 configure_page(title="Sales Dashboard", icon="📈", layout="wide")
 
 # ============================================================================
+# CUSTOM CSS FOR STITCH DESIGN
+# ============================================================================
+
+st.markdown("""
+<style>
+/* Search bar styling */
+.stTextInput > div > div > input {
+    background-color: #F8F9FA;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+}
+
+/* KPI Card with icon badge */
+.kpi-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.kpi-label {
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1A1A1A;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-delta {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.kpi-delta.positive {
+    color: #10B981;
+}
+
+.kpi-delta.negative {
+    color: #EF4444;
+}
+
+/* Button styling */
+.stButton > button {
+    background: #0066FF !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.stButton > button:hover {
+    background: #0052CC !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================================
 # SIDEBAR
 # ============================================================================
 
-add_sidebar_logo()
+# Note: Streamlit automatically adds logo and navigation at the top
+# Our sidebar content appears AFTER the navigation
 
-st.sidebar.markdown("### 📈 Sales Dashboard")
-st.sidebar.markdown("Analyze revenue trends, product performance, and sales metrics.")
+st.sidebar.markdown("---")
+
+# Export Report Button
+if st.sidebar.button("📥 Export Report", use_container_width=True):
+    st.sidebar.success("Report exported successfully!")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 📈 Sales Analytics")
+st.sidebar.markdown("Track revenue, monitor product performance, and analyze sales trends.")
+
+# Settings and Logout at bottom
+st.sidebar.markdown("""
+<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>⚙️</span>
+        <span>Settings</span>
+    </div>
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>🚪</span>
+        <span>Logout</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # LOAD DATA
@@ -140,28 +243,50 @@ if st.sidebar.button("🔄 Reset Filters"):
 add_sidebar_footer()
 
 # ============================================================================
-# HEADER
+# HEADER WITH SEARCH BAR
 # ============================================================================
 
-render_html(f"""
-<div style="margin-bottom: 2rem;">
-    <h1 style="
-        font-family: 'Inter', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        color: {COLORS['text_primary']};
-        margin: 0 0 0.25rem 0;
-    ">Sales Dashboard</h1>
-    <p style="
-        font-size: 14px;
-        color: {COLORS['text_secondary']};
-        margin: 0;
-    ">Revenue analytics, trends, and product performance insights</p>
+# Top row: Title and User Profile
+st.markdown("""
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Sales Analytics 📈</h1>
+        <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Track revenue performance and product trends</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="text-align: right;">
+            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
+            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
+        </div>
+        <div style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0066FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+        ">👤</div>
+    </div>
 </div>
-""")
+""", unsafe_allow_html=True)
+
+# Search bar and Advanced Filter
+col_search, col_filter = st.columns([4, 1])
+
+with col_search:
+    st.text_input("🔍 Search", placeholder="Search products, orders, revenue data...", label_visibility="collapsed")
+
+with col_filter:
+    st.button("⚡ Quick Filters", use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ============================================================================
-# SALES KPI METRICS
+# SALES KPI METRICS WITH ICON BADGES
 # ============================================================================
 
 st.markdown("### 📊 Sales Metrics")
@@ -175,32 +300,48 @@ avg_order_value = total_revenue / total_orders if total_orders > 0 else 0
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric(
-        label="💰 TOTAL REVENUE",
-        value=format_currency(total_revenue),
-        delta=None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #EFF6FF;">
+            <span style="font-size: 24px;">💰</span>
+        </div>
+        <div class="kpi-label">TOTAL REVENUE</div>
+        <div class="kpi-value">{format_currency(total_revenue)}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.metric(
-        label="🛒 TOTAL ORDERS",
-        value=format_number(total_orders),
-        delta=None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #DBEAFE;">
+            <span style="font-size: 24px;">🛒</span>
+        </div>
+        <div class="kpi-label">TOTAL ORDERS</div>
+        <div class="kpi-value">{format_number(total_orders)}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.metric(
-        label="👥 UNIQUE CUSTOMERS",
-        value=format_number(total_customers),
-        delta=None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #D1FAE5;">
+            <span style="font-size: 24px;">👥</span>
+        </div>
+        <div class="kpi-label">UNIQUE CUSTOMERS</div>
+        <div class="kpi-value">{format_number(total_customers)}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col4:
-    st.metric(
-        label="📦 AVG ORDER VALUE",
-        value=format_currency(avg_order_value),
-        delta=None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #FCE7F3;">
+            <span style="font-size: 24px;">📦</span>
+        </div>
+        <div class="kpi-label">AVG ORDER VALUE</div>
+        <div class="kpi-value">{format_currency(avg_order_value)}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
 

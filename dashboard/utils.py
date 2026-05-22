@@ -41,26 +41,38 @@ def get_logo_base64():
         return ""
 
 def add_sidebar_logo():
-    """Add RetailPulse logo to sidebar - Uses st.logo() to appear at top"""
+    """Add RetailPulse logo to sidebar at the TOP - original colors, no background"""
     logo_path = get_project_root() / "assets" / "retailpulse-logo.png"
     
-    # Use st.logo() which automatically appears at the top of sidebar
-    # icon_image is the main logo, link is optional
     if logo_path.exists():
-        st.logo(
-            image=str(logo_path),
-            icon_image=str(logo_path)
-        )
+        # Display original logo without filters
+        logo_base64 = get_logo_base64()
+        st.sidebar.markdown(f"""
+        <div style="
+            text-align: center; 
+            padding: 1.5rem 0 1rem 0; 
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #E5E7EB;
+        ">
+            <img src="data:image/png;base64,{logo_base64}" 
+                 style="
+                    width: 160px; 
+                    height: auto;
+                 " 
+                 alt="RetailPulse Logo">
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        # Fallback to markdown if logo file not found
+        # Fallback to text if logo file not found
         st.sidebar.markdown("""
         <div style="
             text-align: center; 
-            padding: 1rem 0 1.5rem 0; 
-            border-bottom: 1px solid #e5e7eb;
+            padding: 1.5rem 0 1rem 0; 
             margin-bottom: 1.5rem;
+            border-bottom: 1px solid #E5E7EB;
         ">
-            <h2 style="color: #3b82f6; margin: 0;">RetailPulse</h2>
+            <h2 style="color: #6B46C1; margin: 0; font-weight: 700;">RetailPulse</h2>
+            <p style="font-size: 11px; color: #9CA3AF; margin: 0.25rem 0 0 0;">Analytics Platform</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -207,6 +219,11 @@ def configure_page(title, icon="📊", layout="wide"):
         initial_sidebar_state="expanded"
     )
     
+    # Add logo at the very top using st.logo()
+    logo_path = get_project_root() / "assets" / "retailpulse-logo.png"
+    if logo_path.exists():
+        st.logo(str(logo_path))
+    
     # FORCE sidebar to be visible with CSS
     st.markdown("""
     <style>
@@ -222,6 +239,60 @@ def configure_page(title, icon="📊", layout="wide"):
         display: block !important;
         margin-left: 0 !important;
         transform: none !important;
+    }
+    
+    /* Style the logo */
+    section[data-testid="stSidebar"] img[data-testid="stLogo"] {
+        width: 160px !important;
+        height: auto !important;
+        margin: 1rem auto !important;
+        display: block !important;
+    }
+    
+    /* AGGRESSIVE: Use FULL screen width */
+    .main .block-container {
+        max-width: none !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+        padding-top: 1.5rem !important;
+    }
+    
+    /* Remove ALL Streamlit width constraints */
+    section.main > div {
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    .main {
+        max-width: none !important;
+    }
+    
+    /* Force full width for all content */
+    .element-container {
+        width: 100% !important;
+    }
+    
+    /* Make dataframes stretch to full width */
+    .stDataFrame {
+        width: 100% !important;
+    }
+    
+    .stDataFrame > div {
+        width: 100% !important;
+    }
+    
+    .stDataFrame table {
+        width: 100% !important;
+    }
+    
+    /* Make charts use full width */
+    .stPlotlyChart, iframe {
+        width: 100% !important;
+    }
+    
+    /* Stretch columns to use available space */
+    [data-testid="column"] {
+        flex: 1 !important;
     }
     </style>
     """, unsafe_allow_html=True)

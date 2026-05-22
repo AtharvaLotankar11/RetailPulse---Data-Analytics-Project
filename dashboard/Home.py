@@ -1,10 +1,11 @@
 """
 RetailPulse Analytics Management Suite - Home Page
-Clean professional design matching reference
+Professional dashboard matching Stitch reference design
 """
 
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
 # Import custom modules
@@ -24,35 +25,120 @@ from utils import (
 configure_page(title="Home", icon="📊", layout="wide")
 
 # ============================================================================
-# SIDEBAR - CLEAN PROFESSIONAL DESIGN
+# CUSTOM CSS FOR STITCH DESIGN
 # ============================================================================
 
-add_sidebar_logo()
+st.markdown("""
+<style>
+/* Search bar styling */
+.stTextInput > div > div > input {
+    background-color: #F8F9FA;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+}
 
-st.sidebar.markdown("""
-<div style="margin-bottom: 1.5rem;">
-    <div style="
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #9ca3af;
-        margin-bottom: 0.75rem;
-    ">Navigation</div>
-</div>
+/* KPI Card with icon badge */
+.kpi-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.kpi-label {
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1A1A1A;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-delta {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.kpi-delta.positive {
+    color: #10B981;
+}
+
+.kpi-delta.negative {
+    color: #EF4444;
+}
+
+/* Button styling */
+.stButton > button {
+    background: #0066FF !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.stButton > button:hover {
+    background: #0052CC !important;
+}
+</style>
 """, unsafe_allow_html=True)
 
-st.sidebar.info("""
-**Quick Access**
+# ============================================================================
+# PAGE CONFIGURATION
+# ============================================================================
 
-Navigate to different sections:
-- 📈 Sales Dashboard
-- 👥 Customer Analytics  
-- 🔮 Demand Forecasting
-- 📦 Inventory Management
-""")
+configure_page(title="Home", icon="📊", layout="wide")
 
-add_sidebar_footer()
+# ============================================================================
+# SIDEBAR
+# ============================================================================
+
+# Note: Streamlit automatically adds navigation at the top
+# Our sidebar content appears AFTER the navigation
+
+st.sidebar.markdown("---")
+
+# Export Report Button
+if st.sidebar.button("📥 Export Report", use_container_width=True):
+    st.sidebar.success("Report exported successfully!")
+
+st.sidebar.markdown("---")
+
+# Settings and Logout at bottom
+st.sidebar.markdown("""
+<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>⚙️</span>
+        <span>Settings</span>
+    </div>
+    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
+        <span>🚪</span>
+        <span>Logout</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # LOAD DATA
@@ -133,119 +219,252 @@ prev_conversion_rate = (previous_customers / previous_orders * 100) if previous_
 conversion_change = conversion_rate - prev_conversion_rate
 
 # ============================================================================
-# HEADER - PURE HTML
+# HEADER WITH SEARCH BAR
 # ============================================================================
 
-st.markdown(f"""
-<div style="
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-">
+# Top row: Title and User Profile
+st.markdown("""
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <div>
-        <h1 style="
-            font-family: 'Inter', sans-serif;
-            font-size: 28px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin: 0 0 0.25rem 0;
-        ">Good Morning, Jacob</h1>
-        <p style="
-            font-size: 14px;
-            color: #6b7280;
-            margin: 0;
-        ">Here's what's happening in RetailPulse today.</p>
+        <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Welcome back, Jacob 👋</h1>
+        <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Here's your store performance overview for today</p>
     </div>
-    <div style="
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        background: #f9fafb;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-    ">
+    <div style="display: flex; align-items: center; gap: 1rem;">
         <div style="text-align: right;">
-            <div style="font-size: 13px; font-weight: 600; color: #1a1a1a;">Jacob Smith</div>
-            <div style="font-size: 11px; color: #6b7280;">Senior Admin</div>
+            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
+            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
         </div>
         <div style="
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: #0066FF;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
-            font-size: 14px;
-        ">JS</div>
+            font-size: 20px;
+        ">👤</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+# Search bar and Advanced Filter
+col_search, col_filter = st.columns([4, 1])
+
+with col_search:
+    st.text_input("🔍 Search", placeholder="Search orders, products, customers...", label_visibility="collapsed")
+
+with col_filter:
+    st.button("⚡ Quick Filters", use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 # ============================================================================
-# KPI CARDS - Using Streamlit Metrics
+# KPI CARDS WITH ICON BADGES (Matching Stitch Design)
 # ============================================================================
 
-st.markdown("### 📊 Key Metrics")
+st.markdown("### 📊 Today's Performance")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric(
-        label="💰 TOTAL REVENUE",
-        value=format_currency(current_revenue),
-        delta=f"{revenue_change:+.1f}% vs last month" if revenue_change != 0 else None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #EFF6FF;">
+            <span style="font-size: 24px;">💰</span>
+        </div>
+        <div class="kpi-label">TOTAL REVENUE</div>
+        <div class="kpi-value">{format_currency(current_revenue)}</div>
+        <div class="kpi-delta {'positive' if revenue_change >= 0 else 'negative'}">
+            {'↗' if revenue_change >= 0 else '↘'} {abs(revenue_change):.1f}%
+        </div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.metric(
-        label="🛒 ORDERS PLACED",
-        value=format_number(current_orders),
-        delta=f"{orders_change:+.1f}% vs last month" if orders_change != 0 else None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #DBEAFE;">
+            <span style="font-size: 24px;">🛒</span>
+        </div>
+        <div class="kpi-label">ORDERS COMPLETED</div>
+        <div class="kpi-value">{format_number(current_orders)}</div>
+        <div class="kpi-delta {'positive' if orders_change >= 0 else 'negative'}">
+            {'↗' if orders_change >= 0 else '↘'} {abs(orders_change):.1f}%
+        </div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.metric(
-        label="💳 AVG. ORDER VALUE",
-        value=format_currency(current_avg_order),
-        delta=f"{avg_order_change:+.1f}% vs last month" if avg_order_change != 0 else None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #D1FAE5;">
+            <span style="font-size: 24px;">💳</span>
+        </div>
+        <div class="kpi-label">AVG. ORDER VALUE</div>
+        <div class="kpi-value">{format_currency(current_avg_order)}</div>
+        <div class="kpi-delta {'positive' if avg_order_change >= 0 else 'negative'}">
+            {'↗' if avg_order_change >= 0 else '↘'} {abs(avg_order_change):.1f}%
+        </div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col4:
-    st.metric(
-        label="👥 CONVERSION RATE",
-        value=f"{conversion_rate:.1f}%",
-        delta=f"{conversion_change:+.1f}% vs last month" if conversion_change != 0 else None
-    )
+    st.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background: #FCE7F3;">
+            <span style="font-size: 24px;">📈</span>
+        </div>
+        <div class="kpi-label">CONVERSION RATE</div>
+        <div class="kpi-value">{conversion_rate:.1f}%</div>
+        <div class="kpi-delta {'positive' if conversion_change >= 0 else 'negative'}">
+            {'↗' if conversion_change >= 0 else '↘'} {abs(conversion_change):.1f}%
+        </div>
+        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ============================================================================
-# PROJECT OVERVIEW
+# SALES PERFORMANCE & TOP PRODUCTS
 # ============================================================================
 
 st.markdown("---")
 
+col_chart, col_products = st.columns([2, 1])
+
+with col_chart:
+    st.markdown("### 📊 Revenue Trends")
+    
+    # Create sample bar chart data
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
+    sales = [45000, 52000, 78000, 48000, 62000, 51000, 68000]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=months,
+        y=sales,
+        marker_color=['#BFDBFE' if i != 2 else '#0066FF' for i in range(len(months))],
+        hovertemplate='<b>%{x}</b><br>Sales: $%{y:,.0f}<extra></extra>'
+    ))
+    
+    fig.update_layout(
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(family='Inter', size=12),
+        xaxis=dict(
+            title='',
+            showgrid=False,
+            showline=True,
+            linecolor='#E5E7EB'
+        ),
+        yaxis=dict(
+            title='',
+            showgrid=True,
+            gridcolor='#F3F4F6',
+            showline=False
+        ),
+        height=350,
+        margin=dict(l=20, r=20, t=20, b=20),
+        showlegend=False
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+with col_products:
+    st.markdown("""
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">🏆 Best Sellers</h3>
+        <a href="#" style="color: #0066FF; text-decoration: none; font-size: 14px; font-weight: 500;">View All</a>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Top products list
+    products = [
+        {"name": "Nike Air Max 270", "category": "Footwear & Apparel", "price": "$1,420", "sold": "14 sold"},
+        {"name": "Wireless Headphones", "category": "Electronics", "price": "$980", "sold": "23 sold"},
+        {"name": "Smart Watch Pro", "category": "Wearables", "price": "$850", "sold": "18 sold"},
+        {"name": "Classic Aviators", "category": "Accessories", "price": "$420", "sold": "30 sold"},
+    ]
+    
+    for product in products:
+        st.markdown(f"""
+        <div style="
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+        ">
+            <div style="
+                width: 48px;
+                height: 48px;
+                background: #F3F4F6;
+                border-radius: 8px;
+                margin-right: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+            ">📦</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 14px; color: #1A1A1A;">{product['name']}</div>
+                <div style="font-size: 12px; color: #6B7280;">{product['category']}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: 700; font-size: 14px; color: #1A1A1A;">{product['price']}</div>
+                <div style="font-size: 12px; color: #6B7280;">{product['sold']}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ============================================================================
+# RECENT TRANSACTIONS
+# ============================================================================
+
+st.markdown("---")
+st.markdown("### 📋 Recent Orders")
+
+# Sample transaction data
+transactions = [
+    {"id": "#ORD-90210", "customer": "James Sullivan", "initials": "JS", "status": "DELIVERED", "status_color": "#10B981", "date": "Oct 24, 2023", "amount": "$124.50"},
+    {"id": "#ORD-90209", "customer": "Maria Williams", "initials": "MW", "status": "PROCESSING", "status_color": "#3B82F6", "date": "Oct 24, 2023", "amount": "$2,104.99"},
+    {"id": "#ORD-90208", "customer": "Robert Lee", "initials": "RL", "status": "REFUNDED", "status_color": "#EF4444", "date": "Oct 23, 2023", "amount": "$45.00"},
+]
+
+# Create table header
 st.markdown("""
-<div style="margin: 2rem 0;">
-    <h2 style="
-        font-family: 'Inter', sans-serif;
-        font-size: 20px;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 1rem;
-    ">🎯 About RetailPulse</h2>
-    <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">
-        RetailPulse is an AI-powered analytics platform designed for retail enterprise operators.
-        Our suite provides comprehensive insights across sales analytics, customer intelligence,
-        demand forecasting, and inventory optimization.
-    </p>
+<div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 0.75rem 1rem; background: #F9FAFB; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 12px; color: #6B7280; text-transform: uppercase;">
+    <div>ORDER ID</div>
+    <div>CUSTOMER</div>
+    <div>STATUS</div>
+    <div>DATE</div>
+    <div style="text-align: right;">AMOUNT</div>
 </div>
 """, unsafe_allow_html=True)
+
+# Create table rows
+for tx in transactions:
+    st.markdown(f"""
+    <div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 1rem; border-bottom: 1px solid #E5E7EB; align-items: center;">
+        <div style="color: #0066FF; font-weight: 600; font-size: 14px;">{tx['id']}</div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: #DBEAFE; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; color: #0066FF;">{tx['initials']}</div>
+            <span style="font-size: 14px; color: #1A1A1A;">{tx['customer']}</span>
+        </div>
+        <div>
+            <span style="background: {tx['status_color']}20; color: {tx['status_color']}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 11px; font-weight: 700;">{tx['status']}</span>
+        </div>
+        <div style="font-size: 14px; color: #6B7280;">{tx['date']}</div>
+        <div style="text-align: right; font-weight: 700; font-size: 14px; color: #1A1A1A;">{tx['amount']}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ============================================================================
 # FOOTER
