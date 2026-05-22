@@ -2,6 +2,7 @@
  * RetailPulse Custom CSS - Streamlit Overrides
  * Design System: Flat, clean, data-dense interface
  * Based on design.md specifications
+ * Phase 8: Enhanced with animations and polish
  */
 
 /* ============================================================================
@@ -9,6 +10,32 @@
    ============================================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* ============================================================================
+   SMOOTH ANIMATIONS & TRANSITIONS
+   ============================================================================ */
+* {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.element-container {
+    animation: fadeIn 0.3s ease-out;
+}
 
 /* ============================================================================
    ROOT VARIABLES - Design Tokens
@@ -57,6 +84,21 @@ body {
     background-color: var(--background-light);
     color: var(--on-surface);
 }
+
+/* Force light theme */
+.stApp {
+    background-color: var(--background-light);
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Remove Streamlit branding */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
 
 /* ============================================================================
    STREAMLIT CONTAINER OVERRIDES
@@ -129,7 +171,7 @@ h3 {
 }
 
 /* ============================================================================
-   METRIC CARDS (KPI Bento Framework)
+   METRIC CARDS (KPI Bento Framework) - ENHANCED
    ============================================================================ */
 [data-testid="stMetric"] {
     background-color: var(--surface-lowest);
@@ -137,6 +179,13 @@ h3 {
     border-radius: var(--radius-xl);
     padding: var(--stack-md);
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
 }
 
 [data-testid="stMetricLabel"] {
@@ -152,6 +201,7 @@ h3 {
     font-size: 32px;
     font-weight: 700;
     color: var(--on-surface);
+    animation: fadeIn 0.5s ease-out;
 }
 
 [data-testid="stMetricDelta"] {
@@ -160,23 +210,26 @@ h3 {
 }
 
 /* Positive delta */
-[data-testid="stMetricDelta"] svg[fill="green"] {
-    color: var(--success);
+[data-testid="stMetricDelta"] svg[fill="green"],
+[data-testid="stMetricDelta"][data-testid*="increase"] {
+    color: var(--success) !important;
 }
 
 /* Negative delta */
-[data-testid="stMetricDelta"] svg[fill="red"] {
-    color: var(--error);
+[data-testid="stMetricDelta"] svg[fill="red"],
+[data-testid="stMetricDelta"][data-testid*="decrease"] {
+    color: var(--error) !important;
 }
 
 /* ============================================================================
-   DATAFRAME / TABLE STYLING
+   DATAFRAME / TABLE STYLING - ENHANCED
    ============================================================================ */
 [data-testid="stDataFrame"] {
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-xl);
     overflow: hidden;
     background-color: var(--surface-lowest);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .dataframe {
@@ -193,14 +246,18 @@ h3 {
     letter-spacing: 0.05em;
     padding: var(--stack-md);
     border-bottom: 1px solid var(--outline-variant);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .dataframe tbody tr {
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .dataframe tbody tr:hover {
     background-color: rgba(247, 249, 251, 0.8);
+    transform: scale(1.01);
 }
 
 .dataframe tbody td {
@@ -208,18 +265,34 @@ h3 {
     border-bottom: 1px solid rgba(195, 198, 215, 0.3);
 }
 
+/* Alternating row colors */
+.dataframe tbody tr:nth-child(even) {
+    background-color: rgba(247, 249, 251, 0.3);
+}
+
 /* ============================================================================
-   CHART CONTAINERS
+   CHART CONTAINERS - ENHANCED
    ============================================================================ */
 .js-plotly-plot {
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-xl);
     background-color: var(--surface-lowest);
     padding: var(--stack-md);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.js-plotly-plot:hover {
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Chart loading animation */
+.js-plotly-plot .plotly {
+    animation: fadeIn 0.5s ease-out;
 }
 
 /* ============================================================================
-   BUTTONS
+   BUTTONS - ENHANCED
    ============================================================================ */
 .stButton > button {
     background-color: var(--primary);
@@ -232,15 +305,18 @@ h3 {
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    box-shadow: 0 2px 4px rgba(0, 74, 198, 0.2);
 }
 
 .stButton > button:hover {
     background-color: var(--primary-container);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 74, 198, 0.3);
+    transform: translateY(-1px);
 }
 
 .stButton > button:active {
     transform: scale(0.98);
+    box-shadow: 0 1px 2px rgba(0, 74, 198, 0.2);
 }
 
 /* Secondary button */
@@ -248,20 +324,37 @@ h3 {
     background-color: var(--surface-lowest);
     color: var(--on-surface);
     border: 1px solid var(--outline-variant);
+    box-shadow: none;
 }
 
 .stButton > button[kind="secondary"]:hover {
     background-color: var(--surface-container);
+    border-color: var(--primary);
+}
+
+/* Download button special styling */
+.stDownloadButton > button {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+    box-shadow: 0 2px 8px rgba(0, 74, 198, 0.3);
+}
+
+.stDownloadButton > button:hover {
+    box-shadow: 0 4px 12px rgba(0, 74, 198, 0.4);
 }
 
 /* ============================================================================
-   SELECT BOX & FILTERS
+   SELECT BOX & FILTERS - ENHANCED
    ============================================================================ */
 .stSelectbox > div > div {
     background-color: var(--surface-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
     transition: all 0.2s ease;
+}
+
+.stSelectbox > div > div:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
 }
 
 .stSelectbox > div > div:focus-within {
@@ -273,6 +366,11 @@ h3 {
     background-color: var(--surface-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+}
+
+.stMultiSelect > div > div:hover {
+    border-color: var(--primary);
 }
 
 /* ============================================================================
@@ -405,4 +503,187 @@ h3 {
 .hover-lift:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ============================================================================
+   LOADING STATES & SPINNERS
+   ============================================================================ */
+.stSpinner > div {
+    border-color: var(--primary) !important;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================================================
+   ALERTS & INFO BOXES - ENHANCED
+   ============================================================================ */
+.stAlert {
+    border-radius: var(--radius-lg);
+    border-left-width: 4px;
+    animation: slideIn 0.3s ease-out;
+}
+
+[data-testid="stNotification"] {
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN ENHANCEMENTS
+   ============================================================================ */
+@media (max-width: 1024px) {
+    .block-container {
+        padding-left: var(--stack-md);
+        padding-right: var(--stack-md);
+    }
+    
+    [data-testid="stMetricValue"] {
+        font-size: 24px;
+    }
+    
+    h1 {
+        font-size: 20px;
+    }
+    
+    /* Stack columns on mobile */
+    [data-testid="column"] {
+        min-width: 100% !important;
+        flex: 1 1 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    [data-testid="stMetricValue"] {
+        font-size: 20px;
+    }
+    
+    .dataframe {
+        font-size: 12px;
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================================================ */
+*:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    * {
+        border-width: 2px !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+@media print {
+    .stButton,
+    [data-testid="stSidebar"],
+    .stDownloadButton {
+        display: none !important;
+    }
+    
+    .main {
+        padding: 0 !important;
+    }
+    
+    [data-testid="stMetric"],
+    .js-plotly-plot {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* ============================================================================
+   CUSTOM UTILITY CLASSES
+   ============================================================================ */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================================================
+   SIDEBAR ENHANCEMENTS
+   ============================================================================ */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, var(--surface-container) 0%, var(--surface-bright) 100%);
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ============================================================================
+   HEADER POLISH
+   ============================================================================ */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ============================================================================
+   TOOLTIP ENHANCEMENTS
+   ============================================================================ */
+[data-testid="stTooltipIcon"] {
+    color: var(--on-surface-variant);
+    transition: color 0.2s ease;
+}
+
+[data-testid="stTooltipIcon"]:hover {
+    color: var(--primary);
+}
+
+/* ============================================================================
+   SUCCESS/ERROR STATES
+   ============================================================================ */
+.stSuccess {
+    background-color: var(--success-container) !important;
+    color: var(--success) !important;
+    border-left: 4px solid var(--success) !important;
+}
+
+.stError {
+    background-color: var(--error-container) !important;
+    color: var(--error) !important;
+    border-left: 4px solid var(--error) !important;
+}
+
+.stWarning {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border-left: 4px solid #f59e0b !important;
+}
+
+.stInfo {
+    background-color: var(--secondary-fixed) !important;
+    color: var(--on-secondary-fixed-variant) !important;
+    border-left: 4px solid var(--primary) !important;
 }
