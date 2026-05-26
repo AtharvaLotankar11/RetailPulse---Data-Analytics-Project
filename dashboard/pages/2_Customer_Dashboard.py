@@ -130,19 +130,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 👥 Customer Insights")
 st.sidebar.markdown("Understand your customers, segment audiences, and boost loyalty.")
 
-# Settings and Logout at bottom
-st.sidebar.markdown("""
-<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>⚙️</span>
-        <span>Settings</span>
-    </div>
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>🚪</span>
-        <span>Logout</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# Sidebar footer is already added
 
 # ============================================================================
 # LOAD DATA
@@ -174,7 +162,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 🔍 Filters")
 
 # Segment filter - use 'Cluster' column from YOUR data
-segment_col = 'Cluster' if 'Cluster' in segments_df.columns else 'Segment'
+segment_col = 'Customer_Type' if 'Customer_Type' in segments_df.columns else ('Cluster' if 'Cluster' in segments_df.columns else 'Segment')
 
 if segment_col in segments_df.columns:
     segments = ['All'] + sorted(segments_df[segment_col].dropna().unique().tolist())
@@ -198,30 +186,12 @@ add_sidebar_footer()
 # HEADER WITH SEARCH BAR
 # ============================================================================
 
-# Top row: Title and User Profile
+# Top row: Title (no user profile)
 st.markdown("""
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <div>
         <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Customer Insights 👥</h1>
         <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Understand your audience and drive customer loyalty</p>
-    </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="text-align: right;">
-            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
-            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
-        </div>
-        <div style="
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #0066FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 20px;
-        ">👤</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -230,7 +200,11 @@ st.markdown("""
 col_search, col_filter = st.columns([4, 1])
 
 with col_search:
-    st.text_input("🔍 Search", placeholder="Search customers, segments, purchase history...", label_visibility="collapsed")
+    search_query = st.text_input("🔍 Search", placeholder="Search customers, segments, purchase history...", label_visibility="collapsed")
+
+if search_query:
+    if 'CustomerID' in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df['CustomerID'].astype(str).str.contains(search_query, case=False, na=False)]
 
 with col_filter:
     st.button("⚡ Quick Filters", use_container_width=True)
@@ -249,36 +223,35 @@ col1, col2, col3, col4 = st.columns(4)
 total_customers = len(filtered_df)
 
 # Count segments - use Cluster column
-segment_col = 'Cluster' if 'Cluster' in filtered_df.columns else 'Segment'
+# Count segments using actual segmentation column
+segment_col = (
+    'Customer_Type'
+    if 'Customer_Type' in filtered_df.columns
+    else ('Segment' if 'Segment' in filtered_df.columns else 'Cluster')
+)
 
 if segment_col in filtered_df.columns:
     segment_counts = filtered_df[segment_col].value_counts()
-    
-    # For Cluster data (numeric), categorize by cluster number
-    if segment_col == 'Cluster':
-        # Cluster 0 = At Risk, Cluster 1 = Loyal, Cluster 2 = Premium (example mapping)
-        premium_customers = segment_counts.get(2, 0) if 2 in segment_counts.index else 0
-        at_risk_customers = segment_counts.get(0, 0) if 0 in segment_counts.index else 0
-        loyal_customers = segment_counts.get(1, 0) if 1 in segment_counts.index else 0
-    else:
-        # Try to identify premium/high-value customers
-        premium_keywords = ['Premium', 'Champions', 'Loyal', 'VIP', 'High']
-        premium_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                                if any(keyword in str(seg) for keyword in premium_keywords)])
-        
-        # Try to identify at-risk customers
-        risk_keywords = ['At Risk', 'Hibernating', 'Lost', 'Churn', 'About to Sleep']
-        at_risk_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                                if any(keyword in str(seg) for keyword in risk_keywords)])
-        
-        # Loyal customers
-        loyal_keywords = ['Loyal', 'Champions', 'Potential Loyalist']
-        loyal_customers = sum([segment_counts.get(seg, 0) for seg in segment_counts.index 
-                              if any(keyword in str(seg) for keyword in loyal_keywords)])
+
+    if segment_col == 'Customer_Type':
+        premium_customers = segment_counts.get('Premium', 0)
+        loyal_customers = segment_counts.get('Loyal', 0)
+        at_risk_customers = segment_counts.get('At-Risk', 0)
+
+    elif segment_col == 'Cluster':
+        premium_customers = segment_counts.get(2, 0)
+        loyal_customers = segment_counts.get(1, 0)
+        at_risk_customers = segment_counts.get(0, 0)
+
+    else:  # Segment text labels
+        premium_customers = segment_counts.get('Premium', 0)
+        loyal_customers = segment_counts.get('Loyal', 0)
+        at_risk_customers = segment_counts.get('At-Risk', 0)
+
 else:
     premium_customers = 0
-    at_risk_customers = 0
     loyal_customers = 0
+    at_risk_customers = 0
 
 with col1:
     st.markdown(f"""
@@ -345,7 +318,7 @@ col_left, col_right = st.columns([1, 2])
 with col_left:
     st.markdown("### 📊 Customer Segment Distribution")
     
-    segment_col = 'Cluster' if 'Cluster' in segments_df.columns else 'Segment'
+    segment_col = 'Customer_Type' if 'Customer_Type' in segments_df.columns else ('Cluster' if 'Cluster' in segments_df.columns else 'Segment')
     
     if segment_col in segments_df.columns:
         segment_dist = segments_df[segment_col].value_counts().reset_index()
@@ -410,7 +383,7 @@ with col_right:
             x=recency_col,
             y=frequency_col,
             size=monetary_col,
-            color='Segment' if 'Segment' in filtered_df.columns else None,
+            color=segment_col if segment_col in filtered_df.columns else None,
             title='',
             hover_data=[monetary_col]
         )
@@ -457,7 +430,7 @@ with col_left2:
             x=value_col,
             nbins=30,
             title='',
-            color='Segment' if 'Segment' in filtered_df.columns else None
+            color=segment_col if segment_col in filtered_df.columns else None
         )
         
         fig_clv.update_layout(
@@ -485,17 +458,17 @@ with col_left2:
 with col_right2:
     st.markdown("### 📈 Segment Performance Comparison")
     
-    if 'Segment' in segments_df.columns and value_col:
-        segment_performance = segments_df.groupby('Segment').agg({
+    if segment_col in segments_df.columns and value_col:
+        segment_performance = segments_df.groupby(segment_col).agg({
             value_col: ['mean', 'sum', 'count']
         }).reset_index()
         
-        segment_performance.columns = ['Segment', 'Avg_Value', 'Total_Value', 'Count']
+        segment_performance.columns = [segment_col, 'Avg_Value', 'Total_Value', 'Count']
         segment_performance = segment_performance.sort_values('Total_Value', ascending=True)
         
         fig_segment_perf = px.bar(
             segment_performance,
-            y='Segment',
+            y=segment_col,
             x='Total_Value',
             orientation='h',
             title='',
@@ -639,18 +612,18 @@ with insight_col3:
 # SEGMENT BREAKDOWN TABLE
 # ============================================================================
 
-if 'Segment' in segments_df.columns:
+if segment_col in segments_df.columns:
     st.markdown("---")
     st.markdown("### 📊 Segment Summary Statistics")
     
     # Calculate segment statistics
     if value_col:
-        segment_stats = segments_df.groupby('Segment').agg({
+        segment_stats = segments_df.groupby(segment_col).agg({
             'CustomerID': 'count',
             value_col: ['mean', 'sum', 'min', 'max']
         }).reset_index()
         
-        segment_stats.columns = ['Segment', 'Customer Count', 'Avg Value', 'Total Value', 'Min Value', 'Max Value']
+        segment_stats.columns = [segment_col, 'Customer Count', 'Avg Value', 'Total Value', 'Min Value', 'Max Value']
         
         # Format currency columns
         for col in ['Avg Value', 'Total Value', 'Min Value', 'Max Value']:

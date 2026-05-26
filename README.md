@@ -933,6 +933,13 @@ This project demonstrates strong practical skills in:
 
 ---
 
+# 👥 Development Team
+
+| <img src="https://github.com/Vedzala.png" width="100" height="100" style="border-radius:50%"><br/>**Ved Zala**<br/>Customer Analytics Lead<br/>[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github)](https://github.com/Vedzala) | <img src="https://github.com/Hetpatel5681.png" width="100" height="100" style="border-radius:50%"><br/>**Het Patel**<br/>Data Processing & EDA Lead<br/>[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github)](https://github.com/Hetpatel5681) | <img src="https://github.com/23dcs120.png" width="100" height="100" style="border-radius:50%"><br/>**Parth Shah**<br/>Forecasting & Inventory Lead<br/>[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github)](https://github.com/23dcs120) | <img src="https://github.com/AtharvaLotankar11.png" width="100" height="100" style="border-radius:50%"><br/>**Atharva Lotankar**<br/>Dashboard & Deployment Lead<br/>[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github)](https://github.com/AtharvaLotankar11) |
+|:---:|:---:|:---:|:---:|
+
+---
+
 Developed for:
 Zidio Development – Data Science & Analytics Domain
 

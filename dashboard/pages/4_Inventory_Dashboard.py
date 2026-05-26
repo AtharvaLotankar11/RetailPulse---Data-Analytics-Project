@@ -129,19 +129,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📦 Stock Management")
 st.sidebar.markdown("Monitor inventory levels, prevent stockouts, and reduce overstock.")
 
-# Settings and Logout at bottom
-st.sidebar.markdown("""
-<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>⚙️</span>
-        <span>Settings</span>
-    </div>
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>🚪</span>
-        <span>Logout</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# Sidebar footer is already added
 
 # ============================================================================
 # LOAD DATA
@@ -197,13 +185,16 @@ if not all([product_col, current_stock_col, recommended_stock_col]):
     st.stop()
 
 # Calculate inventory status
-inventory_df['Difference'] = inventory_df[recommended_stock_col] - inventory_df[current_stock_col]
-inventory_df['Status'] = inventory_df['Difference'].apply(
-    lambda x: 'Low Stock' if x > 0 else ('Overstock' if x < -10 else 'Optimal')
-)
-inventory_df['Priority'] = inventory_df['Difference'].apply(
-    lambda x: 'High' if abs(x) > 50 else ('Medium' if abs(x) > 20 else 'Low')
-)
+if 'Difference' not in inventory_df.columns:
+    inventory_df['Difference'] = inventory_df[recommended_stock_col] - inventory_df[current_stock_col]
+if 'Status' not in inventory_df.columns:
+    inventory_df['Status'] = inventory_df['Difference'].apply(
+        lambda x: 'Low Stock' if x > 0 else ('Overstock' if x < -10 else 'Optimal')
+    )
+if 'Priority' not in inventory_df.columns:
+    inventory_df['Priority'] = inventory_df['Difference'].apply(
+        lambda x: 'High' if abs(x) > 50 else ('Medium' if abs(x) > 20 else 'Low')
+    )
 
 # ============================================================================
 # SIDEBAR FILTERS
@@ -238,30 +229,12 @@ add_sidebar_footer()
 # HEADER WITH SEARCH BAR
 # ============================================================================
 
-# Top row: Title and User Profile
+# Top row: Title (no user profile)
 st.markdown("""
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <div>
         <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Stock Management 📦</h1>
         <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Monitor inventory, prevent stockouts, and optimize stock levels</p>
-    </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="text-align: right;">
-            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
-            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
-        </div>
-        <div style="
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #0066FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 20px;
-        ">👤</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -270,7 +243,16 @@ st.markdown("""
 col_search, col_filter = st.columns([4, 1])
 
 with col_search:
-    st.text_input("🔍 Search", placeholder="Search products, SKUs, stock levels...", label_visibility="collapsed")
+    search_query = st.text_input("🔍 Search", placeholder="Search products, SKUs, stock levels...", label_visibility="collapsed")
+
+if search_query:
+    if 'StockCode' in filtered_df.columns:
+        filtered_df = filtered_df[
+            filtered_df[product_col].str.contains(search_query, case=False, na=False) |
+            filtered_df['StockCode'].astype(str).str.contains(search_query, case=False, na=False)
+        ]
+    else:
+        filtered_df = filtered_df[filtered_df[product_col].str.contains(search_query, case=False, na=False)]
 
 with col_filter:
     st.button("⚡ Quick Filters", use_container_width=True)
@@ -424,8 +406,8 @@ with alert_col2:
         
         # Show top 5 overstock items
         st.markdown("**Top 5 Overstock Items:**")
-        overstock_items = high_priority_over.nsmallest(5, 'Difference')[[product_col, current_stock_col, recommended_stock_col, 'Difference']]
-        st.dataframe(overstock_items, width='stretch', hide_index=True)
+        overstock_df = high_priority_over.nsmallest(5, 'Difference')[[product_col, current_stock_col, recommended_stock_col, 'Difference']]
+        st.dataframe(overstock_df, width='stretch', hide_index=True)
     else:
         st.success("✅ No critical overstock alerts")
 

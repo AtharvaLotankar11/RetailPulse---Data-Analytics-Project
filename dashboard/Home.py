@@ -1,6 +1,6 @@
 """
 RetailPulse Analytics Management Suite - Home Page
-Professional dashboard matching Stitch reference design
+Premium Dynamic Dashboard with Dark Mode and Glassmorphism
 """
 
 import streamlit as st
@@ -17,128 +17,13 @@ from utils import (
     add_sidebar_logo,
     add_sidebar_footer
 )
+from design_system import COLORS, TYPOGRAPHY, RADIUS, ICONS, create_kpi_card
 
 # ============================================================================
 # PAGE CONFIGURATION
 # ============================================================================
 
 configure_page(title="Home", icon="📊", layout="wide")
-
-# ============================================================================
-# CUSTOM CSS FOR STITCH DESIGN
-# ============================================================================
-
-st.markdown("""
-<style>
-/* Search bar styling */
-.stTextInput > div > div > input {
-    background-color: #F8F9FA;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 14px;
-}
-
-/* KPI Card with icon badge */
-.kpi-card {
-    background: white;
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
-    padding: 1.5rem;
-    position: relative;
-}
-
-.kpi-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-
-.kpi-label {
-    font-size: 11px;
-    color: #6B7280;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-}
-
-.kpi-value {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1A1A1A;
-    line-height: 1;
-    margin-bottom: 0.5rem;
-}
-
-.kpi-delta {
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.kpi-delta.positive {
-    color: #10B981;
-}
-
-.kpi-delta.negative {
-    color: #EF4444;
-}
-
-/* Button styling */
-.stButton > button {
-    background: #0066FF !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.625rem 1.25rem !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-}
-
-.stButton > button:hover {
-    background: #0052CC !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ============================================================================
-# PAGE CONFIGURATION
-# ============================================================================
-
-configure_page(title="Home", icon="📊", layout="wide")
-
-# ============================================================================
-# SIDEBAR
-# ============================================================================
-
-# Note: Streamlit automatically adds navigation at the top
-# Our sidebar content appears AFTER the navigation
-
-st.sidebar.markdown("---")
-
-# Export Report Button
-if st.sidebar.button("📥 Export Report", use_container_width=True):
-    st.sidebar.success("Report exported successfully!")
-
-st.sidebar.markdown("---")
-
-# Settings and Logout at bottom
-st.sidebar.markdown("""
-<div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #6B7280; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>⚙️</span>
-        <span>Settings</span>
-    </div>
-    <div style="padding: 0.75rem 1rem; cursor: pointer; color: #EF4444; font-size: 14px; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; transition: background 0.2s;">
-        <span>🚪</span>
-        <span>Logout</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # ============================================================================
 # LOAD DATA
@@ -146,7 +31,7 @@ st.sidebar.markdown("""
 
 @st.cache_data
 def load_and_prepare_data():
-    """Load and prepare data for home page"""
+    """Load and prepare dynamic data for home page"""
     df = load_retail_data()
     
     if df.empty:
@@ -154,6 +39,8 @@ def load_and_prepare_data():
     
     # Calculate current period metrics (last 30 days)
     if 'InvoiceDate' in df.columns:
+        # Ensure it's datetime
+        df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
         max_date = df['InvoiceDate'].max()
         current_period_start = max_date - timedelta(days=30)
         previous_period_start = current_period_start - timedelta(days=30)
@@ -189,8 +76,16 @@ for col in ['TotalPrice', 'Revenue', 'Amount', 'Total']:
         break
 
 if revenue_col is None:
-    st.error("⚠️ Could not find revenue column in data.")
-    st.stop()
+    # If no TotalPrice, calculate it if Quantity and UnitPrice exist
+    if 'Quantity' in current_df.columns and 'UnitPrice' in current_df.columns:
+        df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
+        current_df['TotalPrice'] = current_df['Quantity'] * current_df['UnitPrice']
+        if not previous_df.empty:
+            previous_df['TotalPrice'] = previous_df['Quantity'] * previous_df['UnitPrice']
+        revenue_col = 'TotalPrice'
+    else:
+        st.error("⚠️ Could not find or calculate revenue column in data.")
+        st.stop()
 
 # Current period metrics
 current_revenue = current_df[revenue_col].sum()
@@ -213,39 +108,31 @@ else:
     previous_revenue = previous_orders = previous_customers = previous_avg_order = 0
     revenue_change = orders_change = customers_change = avg_order_change = 0
 
-# Conversion rate
+# Conversion rate (simplified proxy)
 conversion_rate = (current_customers / current_orders * 100) if current_orders > 0 else 0
 prev_conversion_rate = (previous_customers / previous_orders * 100) if previous_orders > 0 else 0
 conversion_change = conversion_rate - prev_conversion_rate
 
 # ============================================================================
+# SIDEBAR
+# ============================================================================
+
+st.sidebar.markdown("---")
+
+# Export Report Button
+if st.sidebar.button("📥 Export Report", use_container_width=True):
+    st.sidebar.success("Report exported successfully!")
+
+# ============================================================================
 # HEADER WITH SEARCH BAR
 # ============================================================================
 
-# Top row: Title and User Profile
-st.markdown("""
+# Top row: Title (no user profile)
+st.markdown(f"""
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <div>
-        <h1 style="font-size: 28px; font-weight: 700; color: #1A1A1A; margin: 0; white-space: nowrap;">Welcome back, Jacob 👋</h1>
-        <p style="font-size: 14px; color: #6B7280; margin: 0.25rem 0 0 0;">Here's your store performance overview for today</p>
-    </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="text-align: right;">
-            <div style="font-size: 13px; font-weight: 600; color: #1A1A1A; white-space: nowrap;">Jacob Smith</div>
-            <div style="font-size: 11px; color: #6B7280; white-space: nowrap;">Store Manager</div>
-        </div>
-        <div style="
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #0066FF;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 20px;
-        ">👤</div>
+        <h1 style="font-size: 32px; font-weight: 700; color: {COLORS['text_primary']}; margin: 0; white-space: nowrap; font-family: {TYPOGRAPHY['font_display']}; text-shadow: 0 0 20px {COLORS['primary']}40;">Welcome back, Manager 👋</h1>
+        <p style="font-size: 15px; color: {COLORS['text_secondary']}; margin: 0.25rem 0 0 0;">Here's your real-time store performance overview</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -262,113 +149,106 @@ with col_filter:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ============================================================================
-# KPI CARDS WITH ICON BADGES (Matching Stitch Design)
+# KPI CARDS
 # ============================================================================
 
-st.markdown("### 📊 Today's Performance")
+st.markdown(f"<h3 style='color: {COLORS['text_primary']}; font-family: {TYPOGRAPHY['font_display']};'>📊 Real-time Performance</h3>", unsafe_allow_html=True)
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background: #EFF6FF;">
-            <span style="font-size: 24px;">💰</span>
-        </div>
-        <div class="kpi-label">TOTAL REVENUE</div>
-        <div class="kpi-value">{format_currency(current_revenue)}</div>
-        <div class="kpi-delta {'positive' if revenue_change >= 0 else 'negative'}">
-            {'↗' if revenue_change >= 0 else '↘'} {abs(revenue_change):.1f}%
-        </div>
-        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(create_kpi_card(
+        icon=ICONS['dollar'],
+        label="TOTAL REVENUE",
+        value=format_currency(current_revenue),
+        delta=revenue_change,
+        delta_text="vs last 30 days",
+        icon_bg=COLORS['primary_container'],
+        icon_color=COLORS['primary']
+    ), unsafe_allow_html=True)
 
 with col2:
-    st.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background: #DBEAFE;">
-            <span style="font-size: 24px;">🛒</span>
-        </div>
-        <div class="kpi-label">ORDERS COMPLETED</div>
-        <div class="kpi-value">{format_number(current_orders)}</div>
-        <div class="kpi-delta {'positive' if orders_change >= 0 else 'negative'}">
-            {'↗' if orders_change >= 0 else '↘'} {abs(orders_change):.1f}%
-        </div>
-        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(create_kpi_card(
+        icon=ICONS['cart'],
+        label="ORDERS COMPLETED",
+        value=format_number(current_orders),
+        delta=orders_change,
+        delta_text="vs last 30 days",
+        icon_bg=COLORS['info_container'],
+        icon_color=COLORS['info']
+    ), unsafe_allow_html=True)
 
 with col3:
-    st.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background: #D1FAE5;">
-            <span style="font-size: 24px;">💳</span>
-        </div>
-        <div class="kpi-label">AVG. ORDER VALUE</div>
-        <div class="kpi-value">{format_currency(current_avg_order)}</div>
-        <div class="kpi-delta {'positive' if avg_order_change >= 0 else 'negative'}">
-            {'↗' if avg_order_change >= 0 else '↘'} {abs(avg_order_change):.1f}%
-        </div>
-        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(create_kpi_card(
+        icon=ICONS['card'],
+        label="AVG. ORDER VALUE",
+        value=format_currency(current_avg_order),
+        delta=avg_order_change,
+        delta_text="vs last 30 days",
+        icon_bg=COLORS['success_container'],
+        icon_color=COLORS['success']
+    ), unsafe_allow_html=True)
 
 with col4:
-    st.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-icon" style="background: #FCE7F3;">
-            <span style="font-size: 24px;">📈</span>
-        </div>
-        <div class="kpi-label">CONVERSION RATE</div>
-        <div class="kpi-value">{conversion_rate:.1f}%</div>
-        <div class="kpi-delta {'positive' if conversion_change >= 0 else 'negative'}">
-            {'↗' if conversion_change >= 0 else '↘'} {abs(conversion_change):.1f}%
-        </div>
-        <div style="font-size: 12px; color: #9CA3AF; margin-top: 0.25rem;">vs last period</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(create_kpi_card(
+        icon=ICONS['activity'],
+        label="CONVERSION RATE",
+        value=f"{conversion_rate:.1f}%",
+        delta=conversion_change,
+        delta_text="vs last 30 days",
+        icon_bg=COLORS['warning_light'],
+        icon_color=COLORS['warning']
+    ), unsafe_allow_html=True)
 
 # ============================================================================
 # SALES PERFORMANCE & TOP PRODUCTS
 # ============================================================================
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 
 col_chart, col_products = st.columns([2, 1])
 
 with col_chart:
-    st.markdown("### 📊 Revenue Trends")
+    st.markdown(f"<h3 style='color: {COLORS['text_primary']}; font-family: {TYPOGRAPHY['font_display']};'>📈 Dynamic Revenue Trends</h3>", unsafe_allow_html=True)
     
-    # Create sample bar chart data
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-    sales = [45000, 52000, 78000, 48000, 62000, 51000, 68000]
+    # Compute dynamic monthly sales trend
+    df['YearMonth'] = df['InvoiceDate'].dt.to_period('M').astype(str)
+    monthly_sales = df.groupby('YearMonth')[revenue_col].sum().reset_index()
+    monthly_sales = monthly_sales.tail(7) # Last 7 periods
+    months = monthly_sales['YearMonth'].tolist()
+    sales = monthly_sales[revenue_col].tolist()
     
     fig = go.Figure()
+    
+    # Modern gradient bar chart
     fig.add_trace(go.Bar(
         x=months,
         y=sales,
-        marker_color=['#BFDBFE' if i != 2 else '#0066FF' for i in range(len(months))],
+        marker=dict(
+            color=sales,
+            colorscale=[[0, COLORS['primary_light']], [1, COLORS['primary']]],
+            line=dict(color=COLORS['primary'], width=1)
+        ),
         hovertemplate='<b>%{x}</b><br>Sales: $%{y:,.0f}<extra></extra>'
     ))
     
     fig.update_layout(
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font=dict(family='Inter', size=12),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family=TYPOGRAPHY['font_primary'], size=12, color=COLORS['text_secondary']),
         xaxis=dict(
             title='',
             showgrid=False,
             showline=True,
-            linecolor='#E5E7EB'
+            linecolor=COLORS['border']
         ),
         yaxis=dict(
             title='',
             showgrid=True,
-            gridcolor='#F3F4F6',
+            gridcolor=COLORS['border'],
             showline=False
         ),
-        height=350,
+        height=380,
         margin=dict(l=20, r=20, t=20, b=20),
         showlegend=False
     )
@@ -376,103 +256,127 @@ with col_chart:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_products:
-    st.markdown("""
+    st.markdown(f"""
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">🏆 Best Sellers</h3>
-        <a href="#" style="color: #0066FF; text-decoration: none; font-size: 14px; font-weight: 500;">View All</a>
+        <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: {COLORS['text_primary']}; font-family: {TYPOGRAPHY['font_display']};">🏆 Best Sellers</h3>
+        <a href="#" style="color: {COLORS['primary']}; text-decoration: none; font-size: 14px; font-weight: 500;">View All</a>
     </div>
     """, unsafe_allow_html=True)
     
-    # Top products list
-    products = [
-        {"name": "Nike Air Max 270", "category": "Footwear & Apparel", "price": "$1,420", "sold": "14 sold"},
-        {"name": "Wireless Headphones", "category": "Electronics", "price": "$980", "sold": "23 sold"},
-        {"name": "Smart Watch Pro", "category": "Wearables", "price": "$850", "sold": "18 sold"},
-        {"name": "Classic Aviators", "category": "Accessories", "price": "$420", "sold": "30 sold"},
-    ]
-    
-    for product in products:
-        st.markdown(f"""
-        <div style="
-            display: flex;
-            align-items: center;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border: 1px solid #E5E7EB;
-            border-radius: 8px;
-        ">
+    # Compute dynamic best sellers
+    if 'Description' in df.columns and 'Quantity' in df.columns:
+        top_products_df = df.groupby('Description').agg({
+            revenue_col: 'sum',
+            'Quantity': 'sum'
+        }).nlargest(4, revenue_col).reset_index()
+        
+        for _, row in top_products_df.iterrows():
+            product_name = str(row['Description']).title()[:30]
+            price_str = format_currency(row[revenue_col])
+            sold_str = f"{format_number(row['Quantity'])} sold"
+            
+            st.markdown(f"""
             <div style="
-                width: 48px;
-                height: 48px;
-                background: #F3F4F6;
-                border-radius: 8px;
-                margin-right: 1rem;
                 display: flex;
                 align-items: center;
-                justify-content: center;
-                font-size: 24px;
-            ">📦</div>
-            <div style="flex: 1;">
-                <div style="font-weight: 600; font-size: 14px; color: #1A1A1A;">{product['name']}</div>
-                <div style="font-size: 12px; color: #6B7280;">{product['category']}</div>
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+                background: {COLORS['surface']};
+                backdrop-filter: blur(12px);
+                border: 1px solid {COLORS['border']};
+                border-radius: {RADIUS['lg']};
+                transition: transform 0.2s;
+            " onmouseover="this.style.transform='translateX(4px)';" onmouseout="this.style.transform='translateX(0)';">
+                <div style="
+                    width: 48px;
+                    height: 48px;
+                    background: {COLORS['primary_container']};
+                    border-radius: {RADIUS['md']};
+                    margin-right: 1rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: {COLORS['primary']};
+                ">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        {ICONS['package']}
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 14px; color: {COLORS['text_primary']};">{product_name}</div>
+                    <div style="font-size: 12px; color: {COLORS['text_secondary']};">Top Category</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 700; font-size: 14px; color: {COLORS['primary']};">{price_str}</div>
+                    <div style="font-size: 12px; color: {COLORS['text_tertiary']};">{sold_str}</div>
+                </div>
             </div>
-            <div style="text-align: right;">
-                <div style="font-weight: 700; font-size: 14px; color: #1A1A1A;">{product['price']}</div>
-                <div style="font-size: 12px; color: #6B7280;">{product['sold']}</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Product data not available.")
 
 # ============================================================================
 # RECENT TRANSACTIONS
 # ============================================================================
 
-st.markdown("---")
-st.markdown("### 📋 Recent Orders")
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='color: {COLORS['text_primary']}; font-family: {TYPOGRAPHY['font_display']};'>📋 Live Recent Orders</h3>", unsafe_allow_html=True)
 
-# Sample transaction data
-transactions = [
-    {"id": "#ORD-90210", "customer": "James Sullivan", "initials": "JS", "status": "DELIVERED", "status_color": "#10B981", "date": "Oct 24, 2023", "amount": "$124.50"},
-    {"id": "#ORD-90209", "customer": "Maria Williams", "initials": "MW", "status": "PROCESSING", "status_color": "#3B82F6", "date": "Oct 24, 2023", "amount": "$2,104.99"},
-    {"id": "#ORD-90208", "customer": "Robert Lee", "initials": "RL", "status": "REFUNDED", "status_color": "#EF4444", "date": "Oct 23, 2023", "amount": "$45.00"},
-]
-
-# Create table header
-st.markdown("""
-<div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 0.75rem 1rem; background: #F9FAFB; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 12px; color: #6B7280; text-transform: uppercase;">
-    <div>ORDER ID</div>
-    <div>CUSTOMER</div>
-    <div>STATUS</div>
-    <div>DATE</div>
-    <div style="text-align: right;">AMOUNT</div>
-</div>
-""", unsafe_allow_html=True)
-
-# Create table rows
-for tx in transactions:
+# Compute dynamic recent transactions
+if 'InvoiceNo' in df.columns and 'InvoiceDate' in df.columns:
+    recent_df = df.sort_values('InvoiceDate', ascending=False).drop_duplicates('InvoiceNo').head(5)
+    
+    # Create table header
     st.markdown(f"""
-    <div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 1rem; border-bottom: 1px solid #E5E7EB; align-items: center;">
-        <div style="color: #0066FF; font-weight: 600; font-size: 14px;">{tx['id']}</div>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 32px; height: 32px; border-radius: 50%; background: #DBEAFE; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; color: #0066FF;">{tx['initials']}</div>
-            <span style="font-size: 14px; color: #1A1A1A;">{tx['customer']}</span>
-        </div>
-        <div>
-            <span style="background: {tx['status_color']}20; color: {tx['status_color']}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 11px; font-weight: 700;">{tx['status']}</span>
-        </div>
-        <div style="font-size: 14px; color: #6B7280;">{tx['date']}</div>
-        <div style="text-align: right; font-weight: 700; font-size: 14px; color: #1A1A1A;">{tx['amount']}</div>
+    <div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 1rem; background: {COLORS['surface']}; border: 1px solid {COLORS['border']}; border-bottom: none; border-radius: {RADIUS['lg']} {RADIUS['lg']} 0 0; font-weight: 600; font-size: 12px; color: {COLORS['text_secondary']}; text-transform: uppercase; letter-spacing: 0.05em; backdrop-filter: blur(12px);">
+        <div>ORDER ID</div>
+        <div>CUSTOMER / COUNTRY</div>
+        <div>STATUS</div>
+        <div>DATE</div>
+        <div style="text-align: right;">AMOUNT</div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Create table rows
+    for i, row in recent_df.iterrows():
+        order_id = f"#{row['InvoiceNo']}"
+        customer = str(row.get('CustomerID', row.get('Country', 'Guest')))
+        if customer == 'nan': customer = 'Guest'
+        initials = customer[:2].upper() if customer != 'Guest' else 'GU'
+        amount = format_currency(row[revenue_col])
+        date_str = row['InvoiceDate'].strftime('%b %d, %Y')
+        
+        status_color = COLORS['success']
+        status = "COMPLETED"
+        
+        is_last = (i == recent_df.index[-1])
+        border_radius = f"0 0 {RADIUS['lg']} {RADIUS['lg']}" if is_last else "0"
+        border_bottom = f"1px solid {COLORS['border']}"
+        
+        st.markdown(f"""
+        <div style="display: grid; grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr 1.5fr; padding: 1rem; background: {COLORS['surface']}; border: 1px solid {COLORS['border']}; border-top: none; border-radius: {border_radius}; align-items: center; transition: background 0.2s;" onmouseover="this.style.background='{COLORS['surface_hover']}';" onmouseout="this.style.background='{COLORS['surface']}';">
+            <div style="color: {COLORS['primary']}; font-weight: 600; font-size: 14px;">{order_id}</div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: {COLORS['primary_container']}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: {COLORS['primary']}; box-shadow: 0 0 10px {COLORS['primary']}40;">{initials}</div>
+                <span style="font-size: 14px; color: {COLORS['text_primary']}; font-weight: 500;">{customer}</span>
+            </div>
+            <div>
+                <span style="background: {status_color}20; color: {status_color}; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; border: 1px solid {status_color}40; text-shadow: 0 0 5px {status_color}80;">{status}</span>
+            </div>
+            <div style="font-size: 14px; color: {COLORS['text_secondary']};">{date_str}</div>
+            <div style="text-align: right; font-weight: 700; font-size: 14px; color: {COLORS['text_primary']};">{amount}</div>
+        </div>
+        """, unsafe_allow_html=True)
+else:
+    st.info("Transaction data not available.")
 
 # ============================================================================
 # FOOTER
 # ============================================================================
 
-st.markdown("""
-<div style="text-align: center; padding: 2rem 0 1rem 0; color: #9ca3af; font-size: 13px; border-top: 1px solid #e5e7eb; margin-top: 3rem;">
+st.markdown(f"""
+<div style="text-align: center; padding: 2rem 0 1rem 0; color: {COLORS['text_tertiary']}; font-size: 13px; border-top: 1px solid {COLORS['border']}; margin-top: 3rem;">
     <p style="margin: 0;">© 2026 RetailPulse Analytics Management Suite</p>
-    <p style="margin: 0.5rem 0 0 0;">Built by Het Patel, Ved Zala, Parth Shah & Atharva Lotankar</p>
+    <p style="margin: 0.5rem 0 0 0;">Dynamic & Premium Dashboard Engine</p>
 </div>
 """, unsafe_allow_html=True)

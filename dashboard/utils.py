@@ -69,10 +69,10 @@ def add_sidebar_logo():
             text-align: center; 
             padding: 1.5rem 0 1rem 0; 
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         ">
-            <h2 style="color: #6B46C1; margin: 0; font-weight: 700;">RetailPulse</h2>
-            <p style="font-size: 11px; color: #9CA3AF; margin: 0.25rem 0 0 0;">Analytics Platform</p>
+            <h2 style="color: #00F0FF; margin: 0; font-weight: 700; text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);">RetailPulse</h2>
+            <p style="font-size: 11px; color: #A0A0B0; margin: 0.25rem 0 0 0;">Analytics Platform</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -362,7 +362,7 @@ def add_sidebar_footer():
     """Add footer to sidebar"""
     st.sidebar.markdown("---")
     st.sidebar.markdown("""
-    <div style="text-align: center; font-size: 11px; color: #434655; padding: 1rem 0;">
+    <div style="text-align: center; font-size: 11px; color: #707080; padding: 1rem 0;">
         <p>© 2026 RetailPulse</p>
         <p>Data Analytics Platform</p>
     </div>
