@@ -756,7 +756,6 @@ streamlit run dashboard/Home.py
 - [ ] Data visualizations render correctly
 - [ ] Filters and interactions work
 - [ ] CSV exports function properly
-- [ ] Mobile responsive design works
 - [ ] Share deployment URL with team
 
 ---
