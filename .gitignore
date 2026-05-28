@@ -46,3 +46,10 @@ Thumbs.db
 
 # Temporary files
 organize_files.py
+
+# Docker
+docker-compose.override.yml
+*.log
+
+# Container volumes
+volumes/

@@ -3,6 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge">
   <img src="https://img.shields.io/badge/Streamlit-Dashboard-red?style=for-the-badge">
+  <img src="https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white">
   <img src="https://img.shields.io/badge/MachineLearning-RetailAnalytics-green?style=for-the-badge">
   <img src="https://img.shields.io/badge/Status-ProductionReady-orange?style=for-the-badge">
 </p>
@@ -132,7 +133,37 @@ Inventory Optimization
         ↓
 Streamlit Dashboard
         ↓
-Deployment
+Docker Containerization
+        ↓
+Deployment (Cloud/Local)
+```
+
+## Container Architecture
+
+```text
+┌─────────────────────────────────────────┐
+│         Docker Container                │
+│  ┌───────────────────────────────────┐  │
+│  │   Streamlit Application           │  │
+│  │   - Home.py                       │  │
+│  │   - Sales Dashboard               │  │
+│  │   - Customer Dashboard            │  │
+│  │   - Forecast Dashboard            │  │
+│  │   - Inventory Dashboard           │  │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │   Python 3.11 Runtime             │  │
+│  │   - ML Libraries                  │  │
+│  │   - Data Processing               │  │
+│  │   - Visualization Tools           │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  Port: 8501                             │
+│  Health Check: /_stcore/health          │
+└─────────────────────────────────────────┘
+         ↓
+    Host Machine
+    localhost:8501
 ```
 
 ---
@@ -209,9 +240,11 @@ RetailPulse/
 | Machine Learning | Scikit-learn, XGBoost |
 | Forecasting | Prophet, ARIMA, LSTM |
 | Dashboard | Streamlit |
-| Deployment | Streamlit Cloud / Render |
+| Containerization | Docker, Docker Compose |
+| Deployment | Streamlit Cloud / Docker / Cloud Platforms |
 | Version Control | GitHub |
 | Notebook Environment | Jupyter Notebook |
+| CI/CD | GitHub Actions |
 
 ---
 
@@ -713,12 +746,316 @@ streamlit run dashboard/Home.py
 
 > Access the live dashboard to explore customer analytics, sales trends, demand forecasting, and inventory management in real-time.
 
+### Docker Command Reference
+
+**Essential Commands:**
+```bash
+# Start application
+docker-compose up -d
+
+# Stop application
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Restart application
+docker-compose restart
+
+# Rebuild and start
+docker-compose up -d --build
+
+# Check container status
+docker ps
+
+# Execute commands in container
+docker exec -it retailpulse bash
+
+# View resource usage
+docker stats retailpulse
+
+# Remove all containers and images
+docker-compose down -v
+docker system prune -a
+```
+
+**Debugging Commands:**
+```bash
+# Check container health
+docker inspect --format='{{.State.Health.Status}}' retailpulse
+
+# View last 100 log lines
+docker logs --tail 100 retailpulse
+
+# Follow logs in real-time
+docker logs -f retailpulse
+
+# Check container processes
+docker top retailpulse
+
+# Inspect container configuration
+docker inspect retailpulse
+```
+
+---
+
 ## Deployment Platforms
 
-- **Streamlit Cloud** (Recommended)
-- Render
-- AWS
-- Heroku
+RetailPulse supports multiple deployment options:
+
+### 🐳 Docker (Recommended)
+- **Best for:** Production deployments, local development, CI/CD pipelines
+- **Advantages:** Consistent environment, easy scaling, portable
+- **Setup time:** < 5 minutes
+- **Documentation:** See Docker Deployment section above
+
+### ☁️ Cloud Platforms
+
+#### Streamlit Cloud
+- **Best for:** Quick demos, prototypes, free hosting
+- **Advantages:** Zero configuration, automatic updates from GitHub
+- **Limitations:** Resource constraints, public repositories preferred
+
+#### AWS ECS/Fargate
+- **Best for:** Enterprise production deployments
+- **Advantages:** Auto-scaling, load balancing, AWS ecosystem integration
+- **Requirements:** AWS account, ECR for container registry
+
+#### Azure Container Instances
+- **Best for:** Serverless container deployments
+- **Advantages:** Pay-per-second billing, quick deployment
+- **Requirements:** Azure account, Azure Container Registry
+
+#### Google Cloud Run
+- **Best for:** Serverless, auto-scaling deployments
+- **Advantages:** Scale to zero, pay per request
+- **Requirements:** GCP account, Container Registry
+
+#### Render
+- **Best for:** Simple cloud deployments with Docker
+- **Advantages:** Easy setup, automatic SSL, free tier available
+- **Requirements:** GitHub repository
+
+#### Kubernetes
+- **Best for:** Large-scale, multi-container orchestration
+- **Advantages:** Advanced orchestration, high availability
+- **Requirements:** K8s cluster, container registry
+
+---
+
+## 🐳 Docker Deployment (Recommended)
+
+RetailPulse is fully containerized using Docker for easy deployment, scalability, and consistency across environments.
+
+### Prerequisites
+
+- Docker Engine 20.10+ ([Install Docker](https://docs.docker.com/get-docker/))
+- Docker Compose 2.0+ (included with Docker Desktop)
+- 2GB+ available RAM
+- 1GB+ available disk space
+
+### Quick Start with Docker Compose
+
+The easiest way to run RetailPulse is using Docker Compose:
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/RetailPulse.git
+cd RetailPulse
+
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Access the dashboard
+# Open browser: http://localhost:8501
+```
+
+**Stop the application:**
+```bash
+docker-compose down
+```
+
+**Rebuild after code changes:**
+```bash
+docker-compose up -d --build
+```
+
+### Alternative: Docker CLI
+
+For more control, use Docker CLI commands directly:
+
+```bash
+# Build the image
+docker build -t retailpulse-analytics:latest .
+
+# Run the container
+docker run -d \
+  -p 8501:8501 \
+  --name retailpulse \
+  -v $(pwd)/data:/app/data:ro \
+  retailpulse-analytics:latest
+
+# View real-time logs
+docker logs -f retailpulse
+
+# Stop the container
+docker stop retailpulse
+
+# Remove the container
+docker rm retailpulse
+
+# Remove the image
+docker rmi retailpulse-analytics:latest
+```
+
+### Development Mode with Hot-Reload
+
+For active development with automatic code reloading:
+
+```bash
+# Start in development mode
+docker-compose -f docker-compose.dev.yml up
+
+# The dashboard will automatically reload when you save changes
+# Access at: http://localhost:8501
+```
+
+**Development features:**
+- Live code reloading on file changes
+- Full project mounted as volumes
+- Streamlit's `runOnSave` enabled
+- Immediate feedback during development
+
+### Docker Configuration Details
+
+#### Dockerfile Features
+
+- **Multi-stage build** for optimized image size (~500MB)
+- **Python 3.11-slim** base image
+- **Non-root user** for enhanced security
+- **Health checks** for container monitoring
+- **Environment variables** for Streamlit configuration
+- **Minimal dependencies** for faster builds
+
+#### Docker Compose Services
+
+**Production (`docker-compose.yml`):**
+- Read-only data volumes for security
+- Automatic restart policy
+- Health check monitoring
+- Isolated network
+- Port mapping: 8501:8501
+
+**Development (`docker-compose.dev.yml`):**
+- Read-write volumes for hot-reload
+- Full project mounted
+- Development-friendly settings
+- Streamlit auto-reload enabled
+
+### Environment Variables
+
+Configure the application using environment variables:
+
+```bash
+# Streamlit Configuration
+STREAMLIT_SERVER_PORT=8501
+STREAMLIT_SERVER_ADDRESS=0.0.0.0
+STREAMLIT_SERVER_HEADLESS=true
+STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+STREAMLIT_SERVER_RUN_ON_SAVE=true  # Dev mode only
+```
+
+### Volume Mounts
+
+The Docker setup uses volumes for data persistence:
+
+```yaml
+volumes:
+  - ./data:/app/data:ro              # Data files (read-only)
+  - ./notebooks:/app/notebooks:ro    # Jupyter notebooks (read-only)
+  - ./.streamlit:/app/.streamlit:ro  # Streamlit config (read-only)
+```
+
+### Health Checks
+
+The container includes automatic health monitoring:
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3
+  CMD curl -f http://localhost:8501/_stcore/health || exit 1
+```
+
+**Check container health:**
+```bash
+docker ps
+# Look for "healthy" status in the STATUS column
+
+# Or use inspect
+docker inspect --format='{{.State.Health.Status}}' retailpulse
+```
+
+### Troubleshooting Docker Deployment
+
+#### Container won't start
+```bash
+# Check logs for errors
+docker logs retailpulse
+
+# Verify port availability
+netstat -an | grep 8501  # Linux/Mac
+netstat -an | findstr 8501  # Windows
+```
+
+#### Permission issues
+```bash
+# Ensure data files are readable
+chmod -R 755 data/
+
+# Check container user
+docker exec retailpulse whoami
+```
+
+#### Memory issues
+```bash
+# Increase Docker memory limit (Docker Desktop)
+# Settings → Resources → Memory → 4GB+
+
+# Check container resource usage
+docker stats retailpulse
+```
+
+#### Rebuild from scratch
+```bash
+# Remove everything and rebuild
+docker-compose down -v
+docker system prune -a
+docker-compose up -d --build
+```
+
+### Docker Best Practices
+
+✅ **Security:**
+- Runs as non-root user (UID 1000)
+- Read-only volume mounts in production
+- No sensitive data in image layers
+- Minimal attack surface
+
+✅ **Performance:**
+- Multi-stage builds reduce image size
+- Layer caching for faster rebuilds
+- Optimized dependency installation
+- Health checks for reliability
+
+✅ **Portability:**
+- Works on Linux, macOS, Windows
+- Consistent environment across machines
+- Easy CI/CD integration
+- Cloud-ready architecture
+
+---
 
 ## Deployment Steps
 
@@ -750,13 +1087,57 @@ streamlit run dashboard/Home.py
    - Test all dashboard pages
    - Verify data loads correctly
 
+### Deploying with Docker to Cloud Platforms
+
+#### AWS ECS
+```bash
+# Push to ECR and deploy to ECS
+aws ecr get-login-password --region region | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.region.amazonaws.com
+docker tag retailpulse-analytics:latest aws_account_id.dkr.ecr.region.amazonaws.com/retailpulse:latest
+docker push aws_account_id.dkr.ecr.region.amazonaws.com/retailpulse:latest
+```
+
+#### Azure Container Instances
+```bash
+az container create --resource-group myResourceGroup --name retailpulse --image retailpulse-analytics --dns-name-label retailpulse --ports 8501
+```
+
+#### Google Cloud Run
+```bash
+gcloud builds submit --tag gcr.io/PROJECT_ID/retailpulse-analytics
+gcloud run deploy retailpulse --image gcr.io/PROJECT_ID/retailpulse-analytics --platform managed
+```
+
 ## Post-Deployment Checklist
 
+### Application Verification
 - [ ] All pages load without errors
 - [ ] Data visualizations render correctly
 - [ ] Filters and interactions work
 - [ ] CSV exports function properly
+- [ ] Navigation between pages works smoothly
+
+### Docker-Specific Checks
+- [ ] Container starts successfully (`docker ps` shows "healthy")
+- [ ] Health checks pass (`docker inspect` shows healthy status)
+- [ ] Container logs show no errors (`docker logs`)
+- [ ] Port 8501 is accessible
+- [ ] Volume mounts work correctly
+- [ ] Container restarts automatically on failure
+- [ ] Resource usage is within limits (`docker stats`)
+
+### Cloud Deployment Checks
+- [ ] Application accessible via public URL
+- [ ] SSL/HTTPS enabled (if applicable)
+- [ ] Environment variables configured
+- [ ] Monitoring and logging enabled
+- [ ] Auto-scaling configured (if applicable)
+
+### Final Steps
 - [ ] Share deployment URL with team
+- [ ] Document any custom configurations
+- [ ] Set up monitoring alerts
+- [ ] Create backup strategy
 
 ---
 
@@ -890,7 +1271,6 @@ The final submission includes:
 - Live Deployment Link
 - Project Report PDF
 - README Documentation
-- Demo Video
 
 ---
 
