@@ -32,7 +32,8 @@ jobs:
     
     - name: Test Docker image
       run: |
-        docker-compose up -d
+        docker run -d -p 8501:8501 --name retailpulse-test ${{ env.IMAGE_NAME }}:latest
         sleep 30
         curl -f http://localhost:8501/_stcore/health || exit 1
-        docker-compose down
+        docker stop retailpulse-test
+        docker rm retailpulse-test
